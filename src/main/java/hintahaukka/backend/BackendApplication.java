@@ -10,6 +10,7 @@ import org.springframework.stereotype.*;
 public class BackendApplication {
     
     @GetMapping("/")
+    @ResponseBody
     String home() {
       return "Hello World!!";
     }
