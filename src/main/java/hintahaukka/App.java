@@ -1,30 +1,49 @@
 package hintahaukka;
 
+import hintahaukka.database.*;
+import hintahaukka.domain.*;
+import hintahaukka.service.*;
+
 import static spark.Spark.*;
 import com.google.gson.Gson;
 import java.util.ArrayList;
 
 public class App {
+    
+    private static HintahaukkaService service;
+    
     public static void main(String[] args) {
+        
+        // Service initialization
+        Database database = new Database();
+        try{
+            database.initializeDatabaseIfUninitialized();
+        } catch(Exception e) {
+            System.out.println(e.toString());
+        }
+        PriceDao priceDao = new PriceDao(database);
+        ProductDao productDao = new ProductDao(database);
+        StoreDao storeDao = new StoreDao(database);
+        service = new HintahaukkaService(priceDao, productDao, storeDao);
+        
         port(getHerokuAssignedPort());
         
         post("/", (req, res) -> {
             
-            int ean = Integer.parseInt(req.queryParams("ean"));
+            // Handling the HTTP POST request.
+            String ean = req.queryParams("ean");
             int cents = Integer.parseInt(req.queryParams("cents"));
-            int storeId = Integer.parseInt(req.queryParams("storeId"));
+            String storeId = req.queryParams("storeId");
+            PriceTransferUnit ptu = new PriceTransferUnit(ean, cents, storeId, "Timestamp added by database");
             
-            PriceEntry onePrice1 = new PriceEntry(ean, cents, storeId, 123456789);
-            PriceEntry onePrice2 = new PriceEntry(ean, cents, storeId, 123456789);
-            ArrayList<PriceEntry> listOfPrices = new ArrayList<>();
-            listOfPrices.add(onePrice1);
-            listOfPrices.add(onePrice2);
-            
-            Gson gson = new Gson();
-            String listOfPricesAsJSON = gson.toJson(listOfPrices);
-            
+            // Hintahaukka logic.
+            Product product = service.addThePriceOfGivenProductToDatabase(ptu);
+            ArrayList<PriceTransferUnit> ptuList = service.pricesOfGivenProductInDifferentStores(product);
+
+            // HTTP response.
             res.type("application/json");
-            return listOfPricesAsJSON;
+            String ptuListAsJSON = new Gson().toJson(ptuList);
+            return ptuListAsJSON;
         });
         
     }
