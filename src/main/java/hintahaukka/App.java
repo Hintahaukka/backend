@@ -3,7 +3,6 @@ package hintahaukka;
 import hintahaukka.database.*;
 import hintahaukka.domain.*;
 import hintahaukka.service.*;
-
 import static spark.Spark.*;
 import com.google.gson.Gson;
 import java.util.ArrayList;
@@ -44,6 +43,17 @@ public class App {
             res.type("application/json");
             String ptuListAsJSON = new Gson().toJson(ptuList);
             return ptuListAsJSON;
+        });
+        
+        get("/reset_database", (req, res) -> {
+            try{
+                database.clearDatabase();
+                database.initializeDatabaseIfUninitialized();
+            } catch(Exception e) {
+                System.out.println(e.toString());
+                return "Database reset failed.";
+            }
+            return "Database reseted.";
         });
         
     }

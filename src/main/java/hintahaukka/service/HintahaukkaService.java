@@ -2,7 +2,6 @@ package hintahaukka.service;
 
 import hintahaukka.domain.*;
 import hintahaukka.database.*;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 
