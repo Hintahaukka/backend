@@ -36,24 +36,59 @@ public class HintahaukkaServiceTest {
     }
 
     @Test
-    public void returning3pricesForProductFromDifferentStores() {
+    public void return3pricesForProductFromDifferentStores() {
         PriceTransferUnit ptu1 = new PriceTransferUnit("1", 110, "1", "Timestamp added by database");
         PriceTransferUnit ptu2 = new PriceTransferUnit("1", 120, "2", "Timestamp added by database");
         PriceTransferUnit ptu3 = new PriceTransferUnit("1", 130, "3", "Timestamp added by database");
         
         ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
         try{
-            Product product = service.addThePriceOfGivenProductToDatabase(ptu1);
-            product = service.addThePriceOfGivenProductToDatabase(ptu2);
-            product = service.addThePriceOfGivenProductToDatabase(ptu3);
-            ptuList = service.pricesOfGivenProductInDifferentStores(product);
+            Product product1 = service.addThePriceOfGivenProductToDatabase(ptu1);
+            Product product2 = service.addThePriceOfGivenProductToDatabase(ptu2);
+            Product product3 = service.addThePriceOfGivenProductToDatabase(ptu3);
+            ptuList = service.priceOfGivenProductInDifferentStores(product3);
         } catch(Exception e) {
             fail("Some database operations failed.");
         }
         
-        assertEquals("Database clearing failed.", 
-                3, 
-                ptuList.size());
+        assertEquals(3, ptuList.size());
+    }
+    
+    @Test
+    public void returnPricesOnlyForProductQueried() {
+        PriceTransferUnit ptu1 = new PriceTransferUnit("1", 110, "1", "Timestamp added by database");
+        PriceTransferUnit ptu2 = new PriceTransferUnit("1", 120, "2", "Timestamp added by database");
+        PriceTransferUnit ptu3 = new PriceTransferUnit("2", 130, "3", "Timestamp added by database");
+        
+        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
+        try{
+            Product product1 = service.addThePriceOfGivenProductToDatabase(ptu1);
+            Product product2 = service.addThePriceOfGivenProductToDatabase(ptu2);
+            Product product3 = service.addThePriceOfGivenProductToDatabase(ptu3);
+            ptuList = service.priceOfGivenProductInDifferentStores(product2);
+        } catch(Exception e) {
+            fail("Some database operations failed.");
+        }
+        
+        assertEquals(2, ptuList.size());
+    }
+    
+    @Test
+    public void returnOnlyLatestPriceForProduct() {
+        PriceTransferUnit ptu1 = new PriceTransferUnit("1", 110, "1", "Timestamp added by database");
+        PriceTransferUnit ptu2 = new PriceTransferUnit("1", 99, "1", "Timestamp added by database");
+        
+        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
+        try{
+            Product product1 = service.addThePriceOfGivenProductToDatabase(ptu1);
+            Product product2 = service.addThePriceOfGivenProductToDatabase(ptu2);
+            ptuList = service.priceOfGivenProductInDifferentStores(product2);
+        } catch(Exception e) {
+            fail("Some database operations failed.");
+        }
+        
+        assertEquals(1, ptuList.size());
+        assertEquals(99, ptuList.get(0).getCents());
     }
     
 }

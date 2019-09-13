@@ -13,7 +13,7 @@ public class App {
     
     public static void main(String[] args) {
         
-        // Service initialization
+        // Service initialization:
         Database database = new Database();
         try{
             database.initializeDatabaseIfUninitialized();
@@ -29,17 +29,17 @@ public class App {
         
         post("/", (req, res) -> {
             
-            // Handling the HTTP POST request.
+            // Extract information from the HTTP POST request:
             String ean = req.queryParams("ean");
             int cents = Integer.parseInt(req.queryParams("cents"));
             String storeId = req.queryParams("storeId");
             PriceTransferUnit ptu = new PriceTransferUnit(ean, cents, storeId, "Timestamp added by database");
             
-            // Hintahaukka logic.
+            // Hintahaukka logic:
             Product product = service.addThePriceOfGivenProductToDatabase(ptu);
-            ArrayList<PriceTransferUnit> ptuList = service.pricesOfGivenProductInDifferentStores(product);
+            ArrayList<PriceTransferUnit> ptuList = service.priceOfGivenProductInDifferentStores(product);
 
-            // HTTP response.
+            // Build and send HTTP response:
             res.type("application/json");
             String ptuListAsJSON = new Gson().toJson(ptuList);
             return ptuListAsJSON;

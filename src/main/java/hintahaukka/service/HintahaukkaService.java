@@ -21,20 +21,22 @@ public class HintahaukkaService {
         Product product = null;
         
         try{
-            // Lisää tuote jos ei jo ole, hanki sen id.
+            // Add the product to the database if it is not there already:
             product = productDao.findOne(ptu.getEan());
             if(product == null) {
                 product = productDao.add(ptu.getEan(), "Omena");
             }
 
-            // Lisää kauppa jos ei jo ole, hanki id.
+            // Add the store to the database if it is not there already:
             Store store = storeDao.findOne(ptu.getStoreId());            
             if(store == null) {
                 store = storeDao.add(ptu.getStoreId(), "K-Supermarket Kamppi");
             }
 
-            // Poista näillä id:llä vanha hinta jos on, lisää uusi hinta.
+            // Delete the old price of the product in the given store from the database if old price exists.
             priceDao.delete(product, store);
+            
+            // Add the new price of the product in the given store to the database.
             priceDao.addWithCurrentTimestamp(product, store, ptu.getCents());   
             
         } catch(Exception e) {
@@ -44,13 +46,14 @@ public class HintahaukkaService {
         return product;
     }
     
-    public ArrayList<PriceTransferUnit> pricesOfGivenProductInDifferentStores(Product product) throws SQLException {
+    public ArrayList<PriceTransferUnit> priceOfGivenProductInDifferentStores(Product product) throws SQLException {
         ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
         
         try{
-            // etsi kaikki hinnat, ja etsi jokaiselle hinnalle kauppa.
+            // Get all prices for the product from the database.
             ArrayList<Price> prices = priceDao.findAllForProduct(product);
 
+            // For every price of the product, find out from what store the price is from.
             for(Price price : prices) {
                 ptuList.add(new PriceTransferUnit(
                         product.getEan(), 

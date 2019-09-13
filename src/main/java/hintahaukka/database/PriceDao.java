@@ -55,6 +55,7 @@ public class PriceDao {
         PreparedStatement stmt = conn.prepareStatement("DELETE FROM Price WHERE product_id = ? AND store_id = ?");
         stmt.setInt(1, product.getId());
         stmt.setInt(2, store.getId());
+        
         stmt.executeUpdate();
         
         stmt.close();
