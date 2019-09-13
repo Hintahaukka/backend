@@ -1,4 +1,9 @@
 language: java
+install: true
+
+os: linux
+dist: trusty
+jdk: oraclejdk8
 
 services:
   - postgresql
@@ -6,6 +11,8 @@ services:
 before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
 
+script:
+  - ./gradlew build
+
 env:
   - DATABASE_URL="postgres://postgres:@localhost:5432/travis_ci_test"
-
