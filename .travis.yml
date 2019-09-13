@@ -5,7 +5,9 @@ services:
 
 before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
-  - chmod +x gradlew
-  
+
+before_install:
+ - chmod +x gradlew
+
 env:
   - DATABASE_URL="postgres://postgres:@localhost:5432/travis_ci_test"
