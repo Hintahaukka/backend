@@ -8,3 +8,4 @@ before_script:
 
 env:
   - DATABASE_URL="postgres://postgres:@localhost:5432/travis_ci_test"
+
