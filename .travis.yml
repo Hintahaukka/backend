@@ -10,8 +10,5 @@ before_script:
 before_install:
   - chmod +x gradlew
 
-script:
-  - ./gradlew assemble -s
-
 env:
   - DATABASE_URL="postgres://foo:bar@localhost:5432/travisdb"
