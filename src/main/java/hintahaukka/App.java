@@ -56,6 +56,10 @@ public class App {
             return "Database reseted.";
         });
         
+        get("/wake", (req, res) -> {
+            return "Heroku is awake!";
+        });
+        
     }
 
     static int getHerokuAssignedPort() {
