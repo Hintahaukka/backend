@@ -15,6 +15,5 @@ env:
 
 script:
   - ./gradlew build
-  - ./gradlew test
-  - ./gradlew check
+  - ./gradlew test jacocoTestReport
   - bash <(curl -s https://codecov.io/bash)
