@@ -15,6 +15,6 @@ env:
 
 script:
   - ./gradlew build
-  - ./gradlew test jacocoTestReport
+  - ./gradlew check jacocoTestReport
   - export CODECOV_TOKEN="token"
-  - bash <(curl -s https://codecov.io/bash) -f build/reports/test
+  - bash <(curl -s https://codecov.io/bash) -f build/reports
