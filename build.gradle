@@ -10,6 +10,9 @@ plugins {
     // Apply the java plugin to add support for Java
     id 'java'
 
+    // Apply the jacoco plugin to add support for Jacoco
+    id 'jacoco'
+
     // Apply the application plugin to add support for building an application
     id 'application'
 }
@@ -36,6 +39,25 @@ dependencies {
 
 task stage {
     dependsOn installDist
+}
+
+// Define the main class for the application
+mainClassName = 'hintahaukka.App'
+
+// Configuring Jacoco
+jacoco {
+    toolVersion = "0.8.4"
+    reportsDir = file("$buildDir/customJacocoReportDir")
+}
+
+// Configuring JacocoTestReport
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination file("${buildDir}/jacocoHtml")
+    }
 }
 
 // Define the main class for the application
