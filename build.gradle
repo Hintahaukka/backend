@@ -62,3 +62,7 @@ jacocoTestReport {
 
 // Define the main class for the application
 mainClassName = 'hintahaukka.App'
+
+
+// run report
+check.dependsOn jacocoTestReport
