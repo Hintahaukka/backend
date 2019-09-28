@@ -17,4 +17,4 @@ script:
   - ./gradlew build
   - ./gradlew test jacocoTestReport
   - export CODECOV_TOKEN="token"
-  - bash <(curl -s https://codecov.io/bash) -f build/reports
+  - bash <(curl -s https://codecov.io/bash) -f build/reports/test
