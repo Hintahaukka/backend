@@ -12,7 +12,10 @@ before_install:
 
 env:
   - DATABASE_URL="postgres://foo:bar@localhost:5432/travisdb"
-  
-after_success:
-  - codecov
+
+script:
+  - ./gradlew build
+  - ./gradlew check jacocoTestReport
+  - bash <(curl -s https://codecov.io/bash) 
+
 
