@@ -16,7 +16,8 @@ public class App {
         // Service initialization:
         Database database = new Database();
         try{
-            database.initializeDatabaseIfUninitialized();
+            database.initializeDatabaseIfUninitialized("public");
+            database.initializeDatabaseIfUninitialized("test");
         } catch(Exception e) {
             System.out.println(e.toString());
         }
@@ -27,7 +28,7 @@ public class App {
         
         port(getHerokuAssignedPort());
         
-        post("/", (req, res) -> {
+        post("/:schemaName", (req, res) -> {
             
             // Extract information from the HTTP POST request:
             String ean = req.queryParams("ean");
@@ -35,9 +36,12 @@ public class App {
             String storeId = req.queryParams("storeId");
             PriceTransferUnit ptu = new PriceTransferUnit(ean, cents, storeId, "Timestamp added by database");
             
+            String schemaName = req.params(":schemaName");
+            if(!schemaName.equals("public") && !schemaName.equals("test")) return "Error!";
+            
             // Hintahaukka logic:
-            Product product = service.addThePriceOfGivenProductToDatabase(ptu);
-            ArrayList<PriceTransferUnit> ptuList = service.priceOfGivenProductInDifferentStores(product);
+            Product product = service.addThePriceOfGivenProductToDatabase(ptu, schemaName);
+            ArrayList<PriceTransferUnit> ptuList = service.priceOfGivenProductInDifferentStores(product, schemaName);
 
             // Build and send HTTP response:
             res.type("application/json");
@@ -45,10 +49,13 @@ public class App {
             return ptuListAsJSON;
         });
         
-        get("/reset_database", (req, res) -> {
+        get("/reset/:schemaName", (req, res) -> {
+            String schemaName = req.params(":schemaName");
+            if(!schemaName.equals("public") && !schemaName.equals("test")) return "Error!";
+            
             try{
-                database.clearDatabase();
-                database.initializeDatabaseIfUninitialized();
+                database.clearDatabase(schemaName);
+                database.initializeDatabaseIfUninitialized(schemaName);
             } catch(Exception e) {
                 System.out.println(e.toString());
                 return "Database reset failed.";

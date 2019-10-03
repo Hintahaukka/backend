@@ -10,18 +10,18 @@ public class DatabaseTest {
     public void databaseInitializationAndClearing() {
         Database database = new Database();
         try{
-            database.clearDatabase();
-            database.initializeDatabaseIfUninitialized();
+            database.clearDatabase("public");
+            database.initializeDatabaseIfUninitialized("public");
             
             assertEquals("Database initialization failed.", 
-                Database.CREATE_TABLE_STATEMENTS.length, 
-                database.countTables());
+                database.createTableStatements("public").length, 
+                database.countTables("public"));
             
-            database.clearDatabase();
+            database.clearDatabase("public");
             
             assertEquals("Database clearing failed.", 
                 0, 
-                database.countTables());
+                database.countTables("public"));
         } catch(Exception e) {
             fail("Some database operations failed while initialization and reset");
         }

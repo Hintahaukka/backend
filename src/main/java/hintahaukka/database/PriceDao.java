@@ -16,9 +16,9 @@ public class PriceDao {
         this.database = database;
     }
     
-    public ArrayList<Price> findAllForProduct(Product product) throws URISyntaxException, SQLException {
+    public ArrayList<Price> findAllForProduct(Product product, String schemaName) throws URISyntaxException, SQLException {
         Connection conn = this.database.getConnection();
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM Price WHERE product_id = ?");
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schemaName + ".Price WHERE product_id = ?");
         stmt.setInt(1, product.getId());
         
         ResultSet rs = stmt.executeQuery();
@@ -37,9 +37,9 @@ public class PriceDao {
         return prices;
     }
     
-    public void addWithCurrentTimestamp(Product product, Store store, int cents) throws URISyntaxException, SQLException {
+    public void addWithCurrentTimestamp(Product product, Store store, int cents, String schemaName) throws URISyntaxException, SQLException {
         Connection conn = this.database.getConnection();
-        PreparedStatement stmt = conn.prepareStatement("INSERT INTO Price (product_id, store_id, cents) VALUES (?, ?, ?)");
+        PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + schemaName + ".Price (product_id, store_id, cents) VALUES (?, ?, ?)");
         stmt.setInt(1, product.getId());
         stmt.setInt(2, store.getId());
         stmt.setInt(3, cents);
@@ -50,9 +50,9 @@ public class PriceDao {
         conn.close();
     }
     
-    public void delete(Product product, Store store) throws URISyntaxException, SQLException {
+    public void delete(Product product, Store store, String schemaName) throws URISyntaxException, SQLException {
         Connection conn = this.database.getConnection();
-        PreparedStatement stmt = conn.prepareStatement("DELETE FROM Price WHERE product_id = ? AND store_id = ?");
+        PreparedStatement stmt = conn.prepareStatement("DELETE FROM " + schemaName + ".Price WHERE product_id = ? AND store_id = ?");
         stmt.setInt(1, product.getId());
         stmt.setInt(2, store.getId());
         
