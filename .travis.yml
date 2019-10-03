@@ -14,6 +14,6 @@ env:
   - DATABASE_URL="postgres://foo:bar@localhost:5432/travisdb"
 
 script:
-  - ./gradlew build --stacktrace --info --scan
+  - ./gradlew build
   - ./gradlew check jacocoTestReport
   - bash <(curl -s https://codecov.io/bash)

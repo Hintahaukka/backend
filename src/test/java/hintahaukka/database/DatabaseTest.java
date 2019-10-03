@@ -23,7 +23,7 @@ public class DatabaseTest {
                 0, 
                 database.countTables("public"));
         } catch(Exception e) {
-            fail("Some database operations failed while initialization and reset");
+            fail(e.getMessage());
         }
     }
     
