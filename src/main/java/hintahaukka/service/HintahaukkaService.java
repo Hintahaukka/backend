@@ -46,7 +46,7 @@ public class HintahaukkaService {
         return product;
     }
     
-    public ArrayList<PriceTransferUnit> priceOfGivenProductInDifferentStores(Product product, String schemaName) throws SQLException {
+    public ArrayList<PriceTransferUnit> priceOfGivenProductInDifferentStores(Product product, String schemaName) {
         ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
         
         try{

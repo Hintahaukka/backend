@@ -26,6 +26,7 @@ public class Database {
     public void initializeDatabaseIfUninitialized(String schemaName) throws URISyntaxException, SQLException {
         String[] statements = createTableStatements(schemaName);
         if (countTables(schemaName) != statements.length) {
+            executeStatements(new String[]{"DROP SCHEMA IF EXISTS " + schemaName + " CASCADE"});
             executeStatements(new String[]{"CREATE SCHEMA " + schemaName});
             executeStatements(statements);
         }
