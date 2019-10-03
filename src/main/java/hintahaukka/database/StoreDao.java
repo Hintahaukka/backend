@@ -15,9 +15,9 @@ public class StoreDao {
         this.database = database;
     }
     
-    public Store findOne(String googleStoreId) throws URISyntaxException, SQLException {
+    public Store findOne(String googleStoreId, String schemaName) throws URISyntaxException, SQLException {
         Connection conn = this.database.getConnection();       
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM Store WHERE googleStoreId = ?");
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schemaName + ".Store WHERE googleStoreId = ?");
         stmt.setString(1, googleStoreId);
 
         ResultSet rs = stmt.executeQuery();       
@@ -38,9 +38,9 @@ public class StoreDao {
         }
     }
     
-    public Store findOne(int id) throws URISyntaxException, SQLException {
+    public Store findOne(int id, String schemaName) throws URISyntaxException, SQLException {
         Connection conn = this.database.getConnection();
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM Store WHERE id = ?");
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schemaName + ".Store WHERE id = ?");
         stmt.setInt(1, id);
 
         ResultSet rs = stmt.executeQuery();
@@ -61,9 +61,9 @@ public class StoreDao {
         }
     }
     
-    public Store add(String googleStoreId, String name) throws URISyntaxException, SQLException {
+    public Store add(String googleStoreId, String name, String schemaName) throws URISyntaxException, SQLException {
         Connection conn = this.database.getConnection();
-        PreparedStatement stmt = conn.prepareStatement("INSERT INTO Store (googleStoreId, name) VALUES (?, ?) RETURNING id");
+        PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + schemaName + ".Store (googleStoreId, name) VALUES (?, ?) RETURNING id");
         stmt.setString(1, googleStoreId);
         stmt.setString(2, name);
 

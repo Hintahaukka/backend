@@ -15,9 +15,9 @@ public class ProductDao {
         this.database = database;
     }
     
-    public Product findOne(String ean) throws URISyntaxException, SQLException {
+    public Product findOne(String ean, String schemaName) throws URISyntaxException, SQLException {
         Connection conn = this.database.getConnection();
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM Product WHERE ean = ?");
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schemaName + ".Product WHERE ean = ?");
         stmt.setString(1, ean);
 
         ResultSet rs = stmt.executeQuery();
@@ -38,9 +38,9 @@ public class ProductDao {
         }
     }
     
-    public Product add(String ean, String name) throws URISyntaxException, SQLException {
+    public Product add(String ean, String name, String schemaName) throws URISyntaxException, SQLException {
         Connection conn = this.database.getConnection();           
-        PreparedStatement stmt = conn.prepareStatement("INSERT INTO Product (ean, name) VALUES (?, ?) RETURNING id");      
+        PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + schemaName + ".Product (ean, name) VALUES (?, ?) RETURNING id");      
         stmt.setString(1, ean);
         stmt.setString(2, name);
 

@@ -10,34 +10,6 @@ import java.net.URISyntaxException;
 
 public class Database {
     
-    static final String[] CREATE_TABLE_STATEMENTS = {
-        "CREATE TABLE Product ("
-            + "id SERIAL PRIMARY KEY, "
-            + "ean TEXT, "
-            + "name TEXT)"
-            ,
-        "CREATE TABLE Store ("
-            + "id SERIAL PRIMARY KEY, "
-            + "googleStoreId TEXT, "
-            + "name TEXT)"
-            ,
-        "CREATE TABLE Price ("
-            + "id SERIAL PRIMARY KEY, "
-            + "product_id INTEGER NOT NULL, "
-            + "store_id INTEGER NOT NULL, "
-            + "cents INTEGER, "
-            + "created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, "
-            + "FOREIGN KEY(product_id) REFERENCES Product (id), "
-            + "FOREIGN KEY(store_id) REFERENCES Store (id))"
-    };
-    
-    static final String[] DROP_TABLE_STATEMENTS = {
-        "DROP TABLE Price",
-        "DROP TABLE Product",
-        "DROP TABLE Store"
-    };
-    
-    
     public Database () {
     }
     
@@ -51,23 +23,27 @@ public class Database {
         return DriverManager.getConnection(dbUrl, username, password);
     }
     
-    public void initializeDatabaseIfUninitialized() throws URISyntaxException, SQLException {
-        if (countTables() != CREATE_TABLE_STATEMENTS.length) {
-            executeStatements(CREATE_TABLE_STATEMENTS);
+    public void initializeDatabaseIfUninitialized(String schemaName) throws URISyntaxException, SQLException {
+        String[] statements = createTableStatements(schemaName);
+        if (countTables(schemaName) != statements.length) {
+            executeStatements(new String[]{"DROP SCHEMA IF EXISTS " + schemaName + " CASCADE"});
+            executeStatements(new String[]{"CREATE SCHEMA " + schemaName});
+            executeStatements(statements);
         }
     }
     
-    public void clearDatabase() throws URISyntaxException, SQLException {
-        if (countTables() == CREATE_TABLE_STATEMENTS.length) {
-            executeStatements(DROP_TABLE_STATEMENTS);
+    public void clearDatabase(String schemaName) throws URISyntaxException, SQLException {
+        String[] statements = createTableStatements(schemaName);
+        if (countTables(schemaName) == statements.length) {
+            executeStatements(new String[]{"DROP SCHEMA " + schemaName + " CASCADE"});
         }        
     }    
     
     
-    int countTables() throws URISyntaxException, SQLException {
+    int countTables(String schemaName) throws URISyntaxException, SQLException {
         Connection connection = this.getConnection();
         PreparedStatement statement = connection.prepareStatement(
-            "SELECT count(*) FROM pg_stat_user_tables"
+            "SELECT count(*) FROM pg_stat_user_tables WHERE schemaname = '" + schemaName + "'"
         );
         ResultSet result = statement.executeQuery();
         
@@ -93,6 +69,29 @@ public class Database {
         }
 
         connection.close();        
+    }
+    
+    String[] createTableStatements(String schemaName) {
+        return new String[]{
+            "CREATE TABLE " + schemaName + ".Product ("
+                + "id SERIAL PRIMARY KEY, "
+                + "ean TEXT, "
+                + "name TEXT)"
+                ,
+            "CREATE TABLE " + schemaName + ".Store ("
+                + "id SERIAL PRIMARY KEY, "
+                + "googleStoreId TEXT, "
+                + "name TEXT)"
+                ,
+            "CREATE TABLE " + schemaName + ".Price ("
+                + "id SERIAL PRIMARY KEY, "
+                + "product_id INTEGER NOT NULL, "
+                + "store_id INTEGER NOT NULL, "
+                + "cents INTEGER, "
+                + "created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, "
+                + "FOREIGN KEY(product_id) REFERENCES Product (id), "
+                + "FOREIGN KEY(store_id) REFERENCES Store (id))"
+        };
     }
 
 }

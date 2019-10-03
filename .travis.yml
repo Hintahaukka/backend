@@ -5,7 +5,7 @@ services:
 
 before_script:
   - psql -c "CREATE DATABASE travisdb;" -U postgres
-  - psql -c "CREATE USER foo WITH PASSWORD 'bar';" -U postgres
+  - psql -c "CREATE ROLE foo LOGIN SUPERUSER PASSWORD 'bar';" -U postgres
 
 before_install:
   - chmod +x gradlew
@@ -14,8 +14,6 @@ env:
   - DATABASE_URL="postgres://foo:bar@localhost:5432/travisdb"
 
 script:
-  - ./gradlew build
+  - ./gradlew build --info
   - ./gradlew check jacocoTestReport
-  - bash <(curl -s https://codecov.io/bash) 
-
-
+  - bash <(curl -s https://codecov.io/bash)

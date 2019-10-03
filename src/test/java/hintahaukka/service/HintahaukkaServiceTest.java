@@ -28,8 +28,8 @@ public class HintahaukkaServiceTest {
     @Before
     public void setUp() {
         try{
-            database.clearDatabase();
-            database.initializeDatabaseIfUninitialized();
+            database.clearDatabase("public");
+            database.initializeDatabaseIfUninitialized("public");
         } catch(Exception e) {
             fail("Some database operations failed while initialization.");
         }        
@@ -43,10 +43,10 @@ public class HintahaukkaServiceTest {
         
         ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
         try{
-            Product product1 = service.addThePriceOfGivenProductToDatabase(ptu1);
-            Product product2 = service.addThePriceOfGivenProductToDatabase(ptu2);
-            Product product3 = service.addThePriceOfGivenProductToDatabase(ptu3);
-            ptuList = service.priceOfGivenProductInDifferentStores(product3);
+            Product product1 = service.addThePriceOfGivenProductToDatabase(ptu1, "public");
+            Product product2 = service.addThePriceOfGivenProductToDatabase(ptu2, "public");
+            Product product3 = service.addThePriceOfGivenProductToDatabase(ptu3, "public");
+            ptuList = service.priceOfGivenProductInDifferentStores(product3, "public");
         } catch(Exception e) {
             fail("Some database operations failed.");
         }
@@ -62,10 +62,10 @@ public class HintahaukkaServiceTest {
         
         ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
         try{
-            Product product1 = service.addThePriceOfGivenProductToDatabase(ptu1);
-            Product product2 = service.addThePriceOfGivenProductToDatabase(ptu2);
-            Product product3 = service.addThePriceOfGivenProductToDatabase(ptu3);
-            ptuList = service.priceOfGivenProductInDifferentStores(product2);
+            Product product1 = service.addThePriceOfGivenProductToDatabase(ptu1, "public");
+            Product product2 = service.addThePriceOfGivenProductToDatabase(ptu2, "public");
+            Product product3 = service.addThePriceOfGivenProductToDatabase(ptu3, "public");
+            ptuList = service.priceOfGivenProductInDifferentStores(product2, "public");
         } catch(Exception e) {
             fail("Some database operations failed.");
         }
@@ -80,9 +80,9 @@ public class HintahaukkaServiceTest {
         
         ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
         try{
-            Product product1 = service.addThePriceOfGivenProductToDatabase(ptu1);
-            Product product2 = service.addThePriceOfGivenProductToDatabase(ptu2);
-            ptuList = service.priceOfGivenProductInDifferentStores(product2);
+            Product product1 = service.addThePriceOfGivenProductToDatabase(ptu1, "public");
+            Product product2 = service.addThePriceOfGivenProductToDatabase(ptu2, "public");
+            ptuList = service.priceOfGivenProductInDifferentStores(product2, "public");
         } catch(Exception e) {
             fail("Some database operations failed.");
         }
