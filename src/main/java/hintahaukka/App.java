@@ -18,12 +18,20 @@ public class App {
         serviceInitialization();
         port(getHerokuAssignedPort());
         
-        post("/", (req, res) -> {
-            return handleServiceCallWithGivenSchema("public", req, res);
+        post("/getInfoAndPrices", (req, res) -> {
+            return getInfoAndPricesFromGivenSchema("public", req, res);
         });
         
-        post("/test", (req, res) -> {
-            return handleServiceCallWithGivenSchema("test", req, res);
+        post("/addPrice", (req, res) -> {
+            return addPriceToGivenSchema("public", req, res);
+        });
+        
+        post("/test/getInfoAndPrices", (req, res) -> {
+            return getInfoAndPricesFromGivenSchema("test", req, res);
+        });
+        
+        post("/test/addPrice", (req, res) -> {
+            return addPriceToGivenSchema("test", req, res);
         });
         
         get("/reset/:schemaName", (req, res) -> {
@@ -61,21 +69,32 @@ public class App {
         service = new HintahaukkaService(priceDao, productDao, storeDao);        
     }
     
-    static String handleServiceCallWithGivenSchema(String schemaName, Request req, Response res) {
+    static String getInfoAndPricesFromGivenSchema(String schemaName, Request req, Response res) {
+        // Extract information from the HTTP POST request:
+        String ean = req.queryParams("ean");
+
+        // Hintahaukka logic:
+        ArrayList<PriceTransferUnit> ptuList = service.priceOfGivenProductInDifferentStores(ean, schemaName);
+        
+        InfoAndPrices infoAndPrices = new InfoAndPrices(ean, "Omena", ptuList);
+
+        // Build and send HTTP response:
+        res.type("application/json");
+        String ptuListAsJSON = new Gson().toJson(infoAndPrices);
+        return ptuListAsJSON;
+    }
+    
+    static String addPriceToGivenSchema(String schemaName, Request req, Response res) {
         // Extract information from the HTTP POST request:
         String ean = req.queryParams("ean");
         int cents = Integer.parseInt(req.queryParams("cents"));
         String storeId = req.queryParams("storeId");
-        PriceTransferUnit ptu = new PriceTransferUnit(ean, cents, storeId, "Timestamp added by database");
 
         // Hintahaukka logic:
-        Product product = service.addThePriceOfGivenProductToDatabase(ptu, schemaName);
-        ArrayList<PriceTransferUnit> ptuList = service.priceOfGivenProductInDifferentStores(product, schemaName);
+        Product product = service.addThePriceOfGivenProductToDatabase(ean, cents, storeId, schemaName);
 
         // Build and send HTTP response:
-        res.type("application/json");
-        String ptuListAsJSON = new Gson().toJson(ptuList);
-        return ptuListAsJSON;
+        return "success";
     }
 
     static int getHerokuAssignedPort() {
