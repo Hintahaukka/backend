@@ -63,7 +63,6 @@ public class Database {
         Connection connection = this.getConnection();
 
         for(String statement : statements) {
-            System.out.println(statement); // FOR TESTING!!
             PreparedStatement executableStatement = connection.prepareStatement(statement);
             executableStatement.executeUpdate();
             executableStatement.close();
