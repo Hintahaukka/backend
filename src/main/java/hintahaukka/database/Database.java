@@ -35,7 +35,7 @@ public class Database {
     public void clearDatabase(String schemaName) throws URISyntaxException, SQLException {
         String[] statements = createTableStatements(schemaName);
         if (countTables(schemaName) == statements.length) {
-            executeStatements(new String[]{"DROP SCHEMA " + schemaName + " CASCADE"});
+            executeStatements(new String[]{"DROP SCHEMA IF EXISTS " + schemaName + " CASCADE"});
         }        
     }    
     
@@ -63,6 +63,7 @@ public class Database {
         Connection connection = this.getConnection();
 
         for(String statement : statements) {
+            System.out.println(statement); // FOR TESTING!!
             PreparedStatement executableStatement = connection.prepareStatement(statement);
             executableStatement.executeUpdate();
             executableStatement.close();
@@ -89,8 +90,8 @@ public class Database {
                 + "store_id INTEGER NOT NULL, "
                 + "cents INTEGER, "
                 + "created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, "
-                + "FOREIGN KEY(product_id) REFERENCES Product (id), "
-                + "FOREIGN KEY(store_id) REFERENCES Store (id))"
+                + "FOREIGN KEY(product_id) REFERENCES " + schemaName + ".Product (id), "
+                + "FOREIGN KEY(store_id) REFERENCES " + schemaName + ".Store (id))"
         };
     }
 

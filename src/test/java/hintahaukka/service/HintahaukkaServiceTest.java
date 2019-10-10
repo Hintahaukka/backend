@@ -28,56 +28,56 @@ public class HintahaukkaServiceTest {
     @Before
     public void setUp() {
         try{
-            database.clearDatabase("public");
-            database.initializeDatabaseIfUninitialized("public");
+            database.clearDatabase("test");
+            database.initializeDatabaseIfUninitialized("test");
         } catch(Exception e) {
-            fail("Some database operations failed while initialization.");
+            fail(e.getMessage());
         }        
     }
 
     @Test
     public void return3pricesForProductFromDifferentStores() {
-        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
+        InfoAndPrices ptuList = null;
         try{
-            Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "public");
-            Product product2 = service.addThePriceOfGivenProductToDatabase("1", 120, "2", "public");
-            Product product3 = service.addThePriceOfGivenProductToDatabase("1", 130, "3", "public");
-            ptuList = service.priceOfGivenProductInDifferentStores(product3.getEan(), "public");
+            Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "test");
+            Product product2 = service.addThePriceOfGivenProductToDatabase("1", 120, "2", "test");
+            Product product3 = service.addThePriceOfGivenProductToDatabase("1", 130, "3", "test");
+            ptuList = service.priceOfGivenProductInDifferentStores(product3.getEan(), "test");
         } catch(Exception e) {
-            fail("Some database operations failed.");
+            fail(e.getMessage());
         }
         
-        assertEquals(3, ptuList.size());
+        assertEquals(3, ptuList.getPrices().size());
     }
     
     @Test
     public void returnPricesOnlyForProductQueried() {
-        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
+        InfoAndPrices ptuList = null;
         try{
-            Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "public");
-            Product product2 = service.addThePriceOfGivenProductToDatabase("1", 120, "2", "public");
-            Product product3 = service.addThePriceOfGivenProductToDatabase("2", 130, "3", "public");
-            ptuList = service.priceOfGivenProductInDifferentStores(product2.getEan(), "public");
+            Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "test");
+            Product product2 = service.addThePriceOfGivenProductToDatabase("1", 120, "2", "test");
+            Product product3 = service.addThePriceOfGivenProductToDatabase("2", 130, "3", "test");
+            ptuList = service.priceOfGivenProductInDifferentStores(product2.getEan(), "test");
         } catch(Exception e) {
-            fail("Some database operations failed.");
+            fail(e.getMessage());
         }
         
-        assertEquals(2, ptuList.size());
+        assertEquals(2, ptuList.getPrices().size());
     }
     
     @Test
     public void returnOnlyLatestPriceForProduct() {
-        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
+        InfoAndPrices ptuList = null;
         try{
-            Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "public");
-            Product product2 = service.addThePriceOfGivenProductToDatabase("1", 99, "1", "public");
-            ptuList = service.priceOfGivenProductInDifferentStores(product2.getEan(), "public");
+            Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "test");
+            Product product2 = service.addThePriceOfGivenProductToDatabase("1", 99, "1", "test");
+            ptuList = service.priceOfGivenProductInDifferentStores(product2.getEan(), "test");
         } catch(Exception e) {
-            fail("Some database operations failed.");
+            fail(e.getMessage());
         }
         
-        assertEquals(1, ptuList.size());
-        assertEquals(99, ptuList.get(0).getCents());
+        assertEquals(1, ptuList.getPrices().size());
+        assertEquals(99, ptuList.getPrices().get(0).getCents());
     }
     
 }

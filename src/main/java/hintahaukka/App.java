@@ -74,9 +74,7 @@ public class App {
         String ean = req.queryParams("ean");
 
         // Hintahaukka logic:
-        ArrayList<PriceTransferUnit> ptuList = service.priceOfGivenProductInDifferentStores(ean, schemaName);
-        
-        InfoAndPrices infoAndPrices = new InfoAndPrices(ean, "Omena", ptuList);
+        InfoAndPrices infoAndPrices = service.priceOfGivenProductInDifferentStores(ean, schemaName);
 
         // Build and send HTTP response:
         res.type("application/json");
