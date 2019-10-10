@@ -69,5 +69,36 @@ public class HintahaukkaService {
         
         return ptuList;
     }
+    
+
+    public static String getProductNameFromApi(String barcode) throws MalformedURLException, IOException {
+        String productName;
+        String urlString = "https://api.barcodelookup.com/v2/products?barcode=" + barcode + "&formatted=y&key=kcz6mpkh3x2rblgh46b2cpcda9p2xy";
+        URL url = new URL (urlString);
+        HttpURLConnection request = (HttpURLConnection) url.openConnection();
+
+        if (request.getResponseCode() == 404) {
+            return null;
+        }
+
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(request.getInputStream()));
+
+        String inputLine;
+
+        StringBuffer response = new StringBuffer();
+        while ((inputLine = reader.readLine()) != null) {
+            response.append(inputLine);
+        } reader.close();
+
+        JsonParser jsonParser = new JsonParser();
+        JsonElement element = jsonParser.parse(response.toString());
+        JsonObject jObject = element.getAsJsonObject();
+        JsonArray jArray = jObject.getAsJsonArray("products");
+        jObject = jArray.get(0).getAsJsonObject();
+        productName = jObject.get("product_name").toString();
+
+        return productName;
+    }
 
 }
