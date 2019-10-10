@@ -69,7 +69,7 @@ public class HintahaukkaService {
         
         return ptuList;
     }
-    
+
 
     public static String getProductNameFromApi(String barcode) throws MalformedURLException, IOException {
         String productName;
