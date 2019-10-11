@@ -30,15 +30,9 @@ public class HintahaukkaService {
     }    
     
     public Product addThePriceOfGivenProductToDatabase(String ean, int cents, String storeId, String schemaName) {
-        Product product = null;
+        Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
         
         try{
-            // Add the product to the database if it is not there already:
-            product = productDao.findOne(ean, schemaName);
-            if(product == null) {
-                product = productDao.add(ean, "Omena", schemaName);
-            }
-
             // Add the store to the database if it is not there already:
             Store store = storeDao.findOne(storeId, schemaName);            
             if(store == null) {
@@ -58,12 +52,11 @@ public class HintahaukkaService {
         return product;
     }
     
-    public ArrayList<PriceTransferUnit> priceOfGivenProductInDifferentStores(String ean, String schemaName) {
-        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
+    public InfoAndPrices priceOfGivenProductInDifferentStores(String ean, String schemaName) {
+        Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
         
+        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
         try{
-            Product product = productDao.findOne(ean, schemaName);
-            
             // Get all prices for the product from the database.
             ArrayList<Price> prices = priceDao.findAllForProduct(product, schemaName);
 
@@ -79,18 +72,40 @@ public class HintahaukkaService {
             System.out.println(e.toString());
         }
         
-        return ptuList;
+        return new InfoAndPrices(product.getEan(), product.getName(), ptuList);
     }
 
-
-    public static String getProductNameFromApi(String barcode) throws MalformedURLException, IOException {
+    
+    Product getProductFromDbAddProductToDbIfNecessary(String ean, String schemaName) {
+        Product product = null;
+        
+        try{
+            product = productDao.findOne(ean, schemaName);
+            
+            // Add the product to the database if it is not there already:
+            if(product == null) {
+                String productName = "";
+                try{
+                    if(schemaName.equals("public")) productName = getProductNameFromApi(ean);
+                }catch(Exception e){}
+                
+                product = productDao.add(ean, productName, schemaName);
+            }
+        } catch(Exception e) {
+            System.out.println(e.toString());
+        }
+        
+        return product;
+    }
+    
+    static String getProductNameFromApi(String barcode) throws MalformedURLException, IOException {
         String productName;
         String urlString = "https://api.barcodelookup.com/v2/products?barcode=" + barcode + "&formatted=y&key=kcz6mpkh3x2rblgh46b2cpcda9p2xy";
         URL url = new URL (urlString);
         HttpURLConnection request = (HttpURLConnection) url.openConnection();
 
         if (request.getResponseCode() == 404) {
-            return null;
+            return "";
         }
 
         BufferedReader reader = new BufferedReader(

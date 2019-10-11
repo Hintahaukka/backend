@@ -13,5 +13,9 @@ public class InfoAndPrices {
         this.name = name;
         this.prices = prices;
     }
+
+    public ArrayList<PriceTransferUnit> getPrices() {
+        return prices;
+    }
     
 }
