@@ -2,24 +2,14 @@ package hintahaukka.domain;
 
 public class PriceTransferUnit {
     
-    private String ean;
     private int cents;
     private String storeId;
     private String timestamp;
 
-    public PriceTransferUnit(String ean, int cents, String storeId, String timestamp) {
-        this.ean = ean;
+    public PriceTransferUnit(int cents, String storeId, String timestamp) {
         this.cents = cents;
         this.storeId = storeId;
         this.timestamp = timestamp;
-    }
-
-    public String getEan() {
-        return ean;
-    }
-
-    public void setEan(String ean) {
-        this.ean = ean;
     }
 
     public int getCents() {

@@ -2,9 +2,6 @@ package hintahaukka.service;
 
 import hintahaukka.database.*;
 import hintahaukka.domain.*;
-import hintahaukka.service.*;
-import java.util.ArrayList;
-import java.sql.SQLException;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -28,67 +25,56 @@ public class HintahaukkaServiceTest {
     @Before
     public void setUp() {
         try{
-            database.clearDatabase("public");
-            database.initializeDatabaseIfUninitialized("public");
+            database.clearDatabase("test");
+            database.initializeDatabaseIfUninitialized("test");
         } catch(Exception e) {
-            fail("Some database operations failed while initialization.");
+            fail(e.getMessage());
         }        
     }
 
     @Test
     public void return3pricesForProductFromDifferentStores() {
-        PriceTransferUnit ptu1 = new PriceTransferUnit("1", 110, "1", "Timestamp added by database");
-        PriceTransferUnit ptu2 = new PriceTransferUnit("1", 120, "2", "Timestamp added by database");
-        PriceTransferUnit ptu3 = new PriceTransferUnit("1", 130, "3", "Timestamp added by database");
-        
-        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
+        InfoAndPrices ptuList = null;
         try{
-            Product product1 = service.addThePriceOfGivenProductToDatabase(ptu1, "public");
-            Product product2 = service.addThePriceOfGivenProductToDatabase(ptu2, "public");
-            Product product3 = service.addThePriceOfGivenProductToDatabase(ptu3, "public");
-            ptuList = service.priceOfGivenProductInDifferentStores(product3, "public");
+            Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "test");
+            Product product2 = service.addThePriceOfGivenProductToDatabase("1", 120, "2", "test");
+            Product product3 = service.addThePriceOfGivenProductToDatabase("1", 130, "3", "test");
+            ptuList = service.priceOfGivenProductInDifferentStores(product3.getEan(), "test");
         } catch(Exception e) {
-            fail("Some database operations failed.");
+            fail(e.getMessage());
         }
         
-        assertEquals(3, ptuList.size());
+        assertEquals(3, ptuList.getPrices().size());
     }
     
     @Test
     public void returnPricesOnlyForProductQueried() {
-        PriceTransferUnit ptu1 = new PriceTransferUnit("1", 110, "1", "Timestamp added by database");
-        PriceTransferUnit ptu2 = new PriceTransferUnit("1", 120, "2", "Timestamp added by database");
-        PriceTransferUnit ptu3 = new PriceTransferUnit("2", 130, "3", "Timestamp added by database");
-        
-        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
+        InfoAndPrices ptuList = null;
         try{
-            Product product1 = service.addThePriceOfGivenProductToDatabase(ptu1, "public");
-            Product product2 = service.addThePriceOfGivenProductToDatabase(ptu2, "public");
-            Product product3 = service.addThePriceOfGivenProductToDatabase(ptu3, "public");
-            ptuList = service.priceOfGivenProductInDifferentStores(product2, "public");
+            Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "test");
+            Product product2 = service.addThePriceOfGivenProductToDatabase("1", 120, "2", "test");
+            Product product3 = service.addThePriceOfGivenProductToDatabase("2", 130, "3", "test");
+            ptuList = service.priceOfGivenProductInDifferentStores(product2.getEan(), "test");
         } catch(Exception e) {
-            fail("Some database operations failed.");
+            fail(e.getMessage());
         }
         
-        assertEquals(2, ptuList.size());
+        assertEquals(2, ptuList.getPrices().size());
     }
     
     @Test
     public void returnOnlyLatestPriceForProduct() {
-        PriceTransferUnit ptu1 = new PriceTransferUnit("1", 110, "1", "Timestamp added by database");
-        PriceTransferUnit ptu2 = new PriceTransferUnit("1", 99, "1", "Timestamp added by database");
-        
-        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
+        InfoAndPrices ptuList = null;
         try{
-            Product product1 = service.addThePriceOfGivenProductToDatabase(ptu1, "public");
-            Product product2 = service.addThePriceOfGivenProductToDatabase(ptu2, "public");
-            ptuList = service.priceOfGivenProductInDifferentStores(product2, "public");
+            Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "test");
+            Product product2 = service.addThePriceOfGivenProductToDatabase("1", 99, "1", "test");
+            ptuList = service.priceOfGivenProductInDifferentStores(product2.getEan(), "test");
         } catch(Exception e) {
-            fail("Some database operations failed.");
+            fail(e.getMessage());
         }
         
-        assertEquals(1, ptuList.size());
-        assertEquals(99, ptuList.get(0).getCents());
+        assertEquals(1, ptuList.getPrices().size());
+        assertEquals(99, ptuList.getPrices().get(0).getCents());
     }
     
 }
