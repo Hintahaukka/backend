@@ -7,7 +7,6 @@ import static spark.Spark.*;
 import spark.Request;
 import spark.Response;
 import com.google.gson.Gson;
-import java.util.ArrayList;
 
 public class App {
     

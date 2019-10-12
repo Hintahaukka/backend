@@ -29,6 +29,15 @@ public class HintahaukkaService {
         this.storeDao = storeDao;
     }    
     
+    /**
+     * After scanning a product with the Hintahaukka app, this method implements logic
+     * to serve the second http query made by the app.
+     * @param ean A string that represents the EAN code of the scanned product.
+     * @param cents the price of the scanned product in cents
+     * @param storeId A string that represents the store ID of the store where the product was scanned.
+     * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
+     * @return 
+     */
     public Product addThePriceOfGivenProductToDatabase(String ean, int cents, String storeId, String schemaName) {
         Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
         
@@ -52,6 +61,13 @@ public class HintahaukkaService {
         return product;
     }
     
+    /**
+     * After scanning a product with the Hintahaukka app, this method implements logic
+     * to serve the first http query made by the app.
+     * @param ean A string that represents the EAN code of the scanned product.
+     * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
+     * @return An InfoAndPrices object that contains the name of the product and a list of the product's prices in different stores.
+     */
     public InfoAndPrices priceOfGivenProductInDifferentStores(String ean, String schemaName) {
         Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
         

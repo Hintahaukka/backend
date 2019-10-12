@@ -2,9 +2,6 @@ package hintahaukka.service;
 
 import hintahaukka.database.*;
 import hintahaukka.domain.*;
-import hintahaukka.service.*;
-import java.util.ArrayList;
-import java.sql.SQLException;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.BeforeClass;
