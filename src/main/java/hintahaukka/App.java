@@ -82,6 +82,10 @@ public class App {
         InfoAndPrices infoAndPrices = service.priceOfGivenProductInDifferentStores(ean, schemaName);
 
         // Build and send HTTP response:
+        if(infoAndPrices == null) {  // Error response.
+            res.status(500);
+            return "Server error!";
+        }
         res.type("application/json");
         String ptuListAsJSON = new Gson().toJson(infoAndPrices);
         return ptuListAsJSON;
@@ -103,6 +107,10 @@ public class App {
         Product product = service.addThePriceOfGivenProductToDatabase(ean, cents, storeId, schemaName);
 
         // Build and send HTTP response:
+        if(product == null) {  // Error response.
+            res.status(500);
+            return "Server error!";
+        }
         return "success";
     }
 

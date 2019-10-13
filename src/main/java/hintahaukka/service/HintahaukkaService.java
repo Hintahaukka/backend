@@ -40,6 +40,7 @@ public class HintahaukkaService {
      */
     public Product addThePriceOfGivenProductToDatabase(String ean, int cents, String storeId, String schemaName) {
         Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
+        if(product == null) return null;
         
         try{
             // Add the store to the database if it is not there already:
@@ -56,6 +57,7 @@ public class HintahaukkaService {
             
         } catch(Exception e) {
             System.out.println(e.toString());
+            return null;
         }
         
         return product;
@@ -70,6 +72,7 @@ public class HintahaukkaService {
      */
     public InfoAndPrices priceOfGivenProductInDifferentStores(String ean, String schemaName) {
         Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
+        if(product == null) return null;
         
         ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
         try{
@@ -86,6 +89,7 @@ public class HintahaukkaService {
             }            
         } catch(Exception e) {
             System.out.println(e.toString());
+            return null;
         }
         
         return new InfoAndPrices(product.getEan(), product.getName(), ptuList);
@@ -109,6 +113,7 @@ public class HintahaukkaService {
             }
         } catch(Exception e) {
             System.out.println(e.toString());
+            return null;
         }
         
         return product;
