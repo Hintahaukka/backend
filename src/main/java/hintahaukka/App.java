@@ -69,6 +69,12 @@ public class App {
     }
     
     static String getInfoAndPricesFromGivenSchema(String schemaName, Request req, Response res) {
+        // Input validation:
+        if(!eanOk(req)) {
+            res.status(400);
+            return "Input error!";
+        }
+        
         // Extract information from the HTTP POST request:
         String ean = req.queryParams("ean");
 
@@ -82,6 +88,12 @@ public class App {
     }
     
     static String addPriceToGivenSchema(String schemaName, Request req, Response res) {
+        // Input validation:
+        if(!eanCentStoreIdOk(req)) {
+            res.status(400);
+            return "Input error!";
+        }
+        
         // Extract information from the HTTP POST request:
         String ean = req.queryParams("ean");
         int cents = Integer.parseInt(req.queryParams("cents"));
@@ -100,5 +112,52 @@ public class App {
             return Integer.parseInt(processBuilder.environment().get("PORT"));
         }
         return 4567; //return default port if heroku-port isn't set (i.e. on localhost)
+    }
+    
+    
+    // Input validators:
+    
+    static boolean eanOk(Request req){
+        if(req.queryParams().size() != 1) {
+            return false;
+        }
+        if(!req.queryParams().contains("ean")) {
+            return false;
+        }
+        if(req.queryParamsValues("ean").length != 1) {
+            return false;
+        }
+        if(req.queryParams("ean").length() < 8) {
+            return false;
+        }
+        return true;
+    }
+    
+    static boolean eanCentStoreIdOk(Request req){
+        if(req.queryParams().size() != 3) {
+            return false;
+        }
+        if(!req.queryParams().contains("ean") || !req.queryParams().contains("cents") || !req.queryParams().contains("storeId")) {
+            return false;
+        }
+        if(req.queryParamsValues("ean").length != 1 || req.queryParamsValues("cents").length != 1 || req.queryParamsValues("storeId").length != 1) {
+            return false;
+        }
+        
+        if(req.queryParams("ean").length() < 8 || req.queryParams("storeId").length() < 1) {
+            return false;
+        }
+        
+        int cents = 0;
+        try{
+            cents = Integer.parseInt(req.queryParams("cents"));
+        }catch(Exception e){
+            return false;
+        }
+        if(cents < 0) {
+            return false;
+        }
+        
+        return true;
     }
 }
