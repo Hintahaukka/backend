@@ -2,13 +2,13 @@
 
 ## CI
 
-|  |  |
+| Branch | Tila |
 | --- | --- |
 | master | [![Build Status](https://travis-ci.org/Hintahaukka/backend.svg?branch=master)](https://travis-ci.org/Hintahaukka/backend)  |
 | dev | [![Build Status](https://travis-ci.org/Hintahaukka/backend.svg?branch=dev)](https://travis-ci.org/Hintahaukka/backend) |
 
 ### Test code coverage:
-|  |  |
+| Branch | Tila |
 | --- | --- |
 | master | [![codecov](https://codecov.io/gh/Hintahaukka/backend/branch/master/graph/badge.svg)](https://codecov.io/gh/Hintahaukka/backend) |
 | dev | [![codecov](https://codecov.io/gh/Hintahaukka/backend/branch/dev/graph/badge.svg)](https://codecov.io/gh/Hintahaukka/backend) |
