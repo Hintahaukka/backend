@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Palvelimen testaus lomake</title>
+</head>
+
+<body>
+
+<h2 style="color:blue">Lomake localhost-palvelimen testitietokannan testaukseen</h2>
+
+<h3>Kysely 1: Tuotenimi ja hinnat muissa kaupoissa</h3>
+<form action="http://localhost:4567/test/getInfoAndPrices" method="post">
+  EAN:<br>
+  <input type="text" name="ean">
+  <br><br>
+  <input type="submit" value="Submit">
+</form>
+
+<h3>Kysely 2: Hinnan lähetys</h3>
+<form action="http://localhost:4567/test/addPrice" method="post">
+  EAN:<br>
+  <input type="text" name="ean">
+  <br>
+  Cents:<br>
+  <input type="number" name="cents">
+  <br>
+  StoreId:<br>
+  <input type="text" name="storeId">
+  <br><br>
+  <input type="submit" value="Submit">
+</form>
+
+<h2 style="color:red">Lomake Heroku-palvelimen testitietokannan testaukseen</h2>
+
+<h3>Kysely 1: Tuotenimi ja hinnat muissa kaupoissa</h3>
+<form action="https://hintahaukka.herokuapp.com/test/getInfoAndPrices" method="post">
+  EAN:<br>
+  <input type="text" name="ean">
+  <br><br>
+  <input type="submit" value="Submit">
+</form>
+
+<h3>Kysely 2: Hinnan lähetys</h3>
+<form action="https://hintahaukka.herokuapp.com/test/addPrice" method="post">
+  EAN:<br>
+  <input type="text" name="ean">
+  <br>
+  Cents:<br>
+  <input type="number" name="cents">
+  <br>
+  StoreId:<br>
+  <input type="text" name="storeId">
+  <br><br>
+  <input type="submit" value="Submit">
+</form>
+
+</body>
+</html>
