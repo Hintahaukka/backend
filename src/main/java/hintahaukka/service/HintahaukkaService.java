@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import hintahaukka.domain.*;
 import hintahaukka.database.*;
@@ -22,11 +23,13 @@ public class HintahaukkaService {
     private PriceDao priceDao;
     private ProductDao productDao;
     private StoreDao storeDao;
+    private UserDao userDao;
 
-    public HintahaukkaService(PriceDao priceDao, ProductDao productDao, StoreDao storeDao) {
+    public HintahaukkaService(PriceDao priceDao, ProductDao productDao, StoreDao storeDao, UserDao userDao) {
         this.priceDao = priceDao;
         this.productDao = productDao;
         this.storeDao = storeDao;
+        this.userDao = userDao;
     }    
     
     /**
@@ -93,6 +96,26 @@ public class HintahaukkaService {
         }
         
         return new InfoAndPrices(product.getEan(), product.getName(), ptuList);
+    }
+    
+    /**
+     * When Hintahaukka app is launched for the first time on a phone, this method implements logic
+     * to serve the http query which the app made in order to get a unique ID which is later used to identify the user.
+     * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
+     * @return The unique ID
+     */
+    public String getNewId(String schemaName) {
+        String newId = null;
+        
+        try{
+            User newUser = userDao.add(RandomStringUtils.random(32, true, true), schemaName);
+            newId = newUser.getToken() + newUser.getId();
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
+        
+        return newId;
     }
 
     

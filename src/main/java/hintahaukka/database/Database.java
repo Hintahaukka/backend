@@ -91,6 +91,13 @@ public class Database {
                 + "created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, "
                 + "FOREIGN KEY(product_id) REFERENCES " + schemaName + ".Product (id), "
                 + "FOREIGN KEY(store_id) REFERENCES " + schemaName + ".Store (id))"
+                ,
+            "CREATE TABLE " + schemaName + ".User ("
+                + "id SERIAL PRIMARY KEY, "
+                + "token TEXT, "
+                + "nickname TEXT, "
+                + "pointsTotal INTEGER DEFAULT 0, "
+                + "pointsUnused INTEGER DEFAULT 0)"
         };
     }
 

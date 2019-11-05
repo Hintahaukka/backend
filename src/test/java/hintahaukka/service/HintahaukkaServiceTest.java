@@ -19,7 +19,8 @@ public class HintahaukkaServiceTest {
         PriceDao priceDao = new PriceDao(database);
         ProductDao productDao = new ProductDao(database);
         StoreDao storeDao = new StoreDao(database);
-        service = new HintahaukkaService(priceDao, productDao, storeDao);
+        UserDao userDao = new UserDao(database);
+        service = new HintahaukkaService(priceDao, productDao, storeDao, userDao);
     }
     
     @Before
@@ -75,6 +76,18 @@ public class HintahaukkaServiceTest {
         
         assertEquals(1, ptuList.getPrices().size());
         assertEquals(99, ptuList.getPrices().get(0).getCents());
+    }
+    
+    @Test
+    public void returnProperIds() {
+        String id1 = service.getNewId("test");
+        String id2 = service.getNewId("test");
+        
+        assertEquals(33, id1.length());
+        assertEquals(33, id2.length());
+        
+        assertEquals(1, Integer.parseInt(id1.substring(32)));
+        assertEquals(2, Integer.parseInt(id2.substring(32)));
     }
     
 }

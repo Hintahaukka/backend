@@ -17,6 +17,7 @@ public class App {
         serviceInitialization();
         port(getHerokuAssignedPort());
         
+        
         post("/getInfoAndPrices", (req, res) -> {
             return getInfoAndPricesFromGivenSchema("public", req, res);
         });
@@ -25,6 +26,11 @@ public class App {
             return addPriceToGivenSchema("public", req, res);
         });
         
+        get("/getNewId", (req, res) -> {
+            return getNewIdWithGivenSchema("public", req, res);
+        });
+        
+        
         post("/test/getInfoAndPrices", (req, res) -> {
             return getInfoAndPricesFromGivenSchema("test", req, res);
         });
@@ -32,6 +38,11 @@ public class App {
         post("/test/addPrice", (req, res) -> {
             return addPriceToGivenSchema("test", req, res);
         });
+        
+        get("/test/getNewId", (req, res) -> {
+            return getNewIdWithGivenSchema("test", req, res);
+        });
+        
         
         get("/reset/:schemaName", (req, res) -> {
             String schemaName = req.params(":schemaName");
@@ -65,7 +76,8 @@ public class App {
         PriceDao priceDao = new PriceDao(database);
         ProductDao productDao = new ProductDao(database);
         StoreDao storeDao = new StoreDao(database);
-        service = new HintahaukkaService(priceDao, productDao, storeDao);        
+        UserDao userDao = new UserDao(database);
+        service = new HintahaukkaService(priceDao, productDao, storeDao, userDao);        
     }
     
     static String getInfoAndPricesFromGivenSchema(String schemaName, Request req, Response res) {
@@ -112,6 +124,18 @@ public class App {
             return "Server error!";
         }
         return "success";
+    }
+    
+    static String getNewIdWithGivenSchema(String schemaName, Request req, Response res) {
+        // Hintahaukka logic:
+        String newId = service.getNewId(schemaName);
+
+        // Build and send HTTP response:
+        if(newId == null) {  // Error response.
+            res.status(500);
+            return "Server error!";
+        }
+        return newId;
     }
 
     static int getHerokuAssignedPort() {
