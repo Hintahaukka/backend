@@ -37,5 +37,28 @@ public class UserDao {
             return null;
         }
     }
+    
+    public boolean updateNickname(int id, String token, String newNickname, String schemaName) throws URISyntaxException, SQLException {
+        Connection conn = this.database.getConnection();
+        PreparedStatement stmt = conn.prepareStatement("UPDATE " + schemaName + ".User SET nickname = ? WHERE id = ? AND token = ? RETURNING id");
+        stmt.setString(1, newNickname);
+        stmt.setInt(2, id);
+        stmt.setString(3, token);
+
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            rs.close();
+            stmt.close();
+            conn.close();
+
+            return true;
+        } else {
+            rs.close();
+            stmt.close();
+            conn.close();
+
+            return false;
+        }
+    }
 
 }
