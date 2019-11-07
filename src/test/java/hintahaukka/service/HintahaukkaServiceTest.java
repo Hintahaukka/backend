@@ -90,4 +90,11 @@ public class HintahaukkaServiceTest {
         assertEquals(2, Integer.parseInt(id2.substring(32)));
     }
     
+    @Test
+    public void nicknameIsUpdated() {
+        String tokenAndId = service.getNewId("test");
+        
+        assertTrue(service.updateNickname(tokenAndId, "Haukka", "test"));
+    }
+    
 }
