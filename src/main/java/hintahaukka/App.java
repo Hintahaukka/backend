@@ -30,6 +30,10 @@ public class App {
             return getNewIdWithGivenSchema("public", req, res);
         });
         
+        post("/updateNickname", (req, res) -> {
+            return updateNicknameToGivenSchema("public", req, res);
+        });
+        
         
         post("/test/getInfoAndPrices", (req, res) -> {
             return getInfoAndPricesFromGivenSchema("test", req, res);
@@ -41,6 +45,10 @@ public class App {
         
         get("/test/getNewId", (req, res) -> {
             return getNewIdWithGivenSchema("test", req, res);
+        });
+        
+        post("/test/updateNickname", (req, res) -> {
+            return updateNicknameToGivenSchema("test", req, res);
         });
         
         
@@ -136,6 +144,28 @@ public class App {
             return "Server error!";
         }
         return newId;
+    } 
+    
+    static String updateNicknameToGivenSchema(String schemaName, Request req, Response res) {
+        // Input validation:
+        if(!IdNicknameOk(req)) {
+            res.status(400);
+            return "Input error!";
+        }
+        
+        // Extract information from the HTTP POST request:
+        String tokenAndId = req.queryParams("id");
+        String newNickname = req.queryParams("nickname");
+
+        // Hintahaukka logic:
+        boolean success = service.updateNickname(tokenAndId, newNickname, schemaName);
+
+        // Build and send HTTP response:
+        if(!success) {  // Error response.
+            res.status(500);
+            return "Server error!";
+        }
+        return "success";
     }
 
     static int getHerokuAssignedPort() {
@@ -187,6 +217,34 @@ public class App {
             return false;
         }
         if(cents < 0) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    static boolean IdNicknameOk(Request req){
+        if(req.queryParams().size() != 2) {
+            return false;
+        }
+        if(!req.queryParams().contains("id") || !req.queryParams().contains("nickname")) {
+            return false;
+        }
+        if(req.queryParamsValues("id").length != 1 || req.queryParamsValues("nickname").length != 1) {
+            return false;
+        }
+        
+        if(req.queryParams("id").length() < 33 || req.queryParams("nickname").length() < 1) {
+            return false;
+        }
+        
+        int id = 0;
+        try{ 
+            id = Integer.parseInt(req.queryParams("id").substring(32));
+        }catch(Exception e){
+            return false;
+        }
+        if(id < 1) {
             return false;
         }
         

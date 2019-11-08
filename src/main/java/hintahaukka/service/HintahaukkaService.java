@@ -117,6 +117,22 @@ public class HintahaukkaService {
         
         return newId;
     }
+    
+    public boolean updateNickname(String tokenAndId, String newNickname, String schemaName) {
+        int id = Integer.parseInt(tokenAndId.substring(32));
+        String token = tokenAndId.substring(0, 32);
+        
+        boolean success = false;
+        
+        try{
+            success = userDao.updateNickname(id, token, newNickname, schemaName);
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return false;
+        }
+        
+        return success;
+    }
 
     
     Product getProductFromDbAddProductToDbIfNecessary(String ean, String schemaName) {
