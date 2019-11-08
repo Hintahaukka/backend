@@ -15,8 +15,11 @@
 
 ## Repositoriot
 
-* Android-sovellus (Projektin päärepositorio) (https://github.com/Hintahaukka/application)
+* [Android-sovellus (Projektin päärepositorio)](https://github.com/Hintahaukka/application)
 * Backend (Tämä repositorio)
+
+## Backendin dokumentaatio
+* [Tietosisältökaavio](https://github.com/Hintahaukka/backend/blob/master/documentation/tietosisaltokaavio.png)
 
 ## Branch -käytännöt
 
