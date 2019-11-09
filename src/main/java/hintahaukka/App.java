@@ -122,12 +122,16 @@ public class App {
         String ean = req.queryParams("ean");
         int cents = Integer.parseInt(req.queryParams("cents"));
         String storeId = req.queryParams("storeId");
+        String tokenAndId = req.queryParams("id");
 
         // Hintahaukka logic:
+        Price priceBefore = service.latestPrice(ean, storeId, schemaName);
         Product product = service.addThePriceOfGivenProductToDatabase(ean, cents, storeId, schemaName);
+        Price priceAfter = service.latestPrice(ean, storeId, schemaName);
+        User user = service.addPointsToUser(tokenAndId, priceBefore, priceAfter, schemaName);
 
         // Build and send HTTP response:
-        if(product == null) {  // Error response.
+        if(product == null || user == null) {  // Error response.
             res.status(500);
             return "Server error!";
         }
