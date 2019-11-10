@@ -135,7 +135,7 @@ public class App {
             res.status(500);
             return "Server error!";
         }
-        return "success";
+        return "" + user.getPointsTotal() + ":" + user.getPointsUnused();
     }
     
     static String getNewIdWithGivenSchema(String schemaName, Request req, Response res) {
