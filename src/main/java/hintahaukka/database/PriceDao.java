@@ -9,20 +9,20 @@ import java.util.ArrayList;
 import java.net.URISyntaxException;
 
 public class PriceDao {
-    
+
     private Database database;
 
     public PriceDao(Database database) {
         this.database = database;
     }
-    
+
     public ArrayList<Price> findAllForProduct(Product product, String schemaName) throws URISyntaxException, SQLException {
         Connection conn = this.database.getConnection();
         PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schemaName + ".Price WHERE product_id = ?");
         stmt.setInt(1, product.getId());
-        
+
         ResultSet rs = stmt.executeQuery();
-        
+
         ArrayList<Price> prices = new ArrayList<>();
 
         while (rs.next()) {
@@ -33,10 +33,26 @@ public class PriceDao {
         rs.close();
         stmt.close();
         conn.close();
-        
+
         return prices;
     }
-    
+
+    public Price findOne(Product product, Store store, String schemaName) throws URISyntaxException, SQLException {
+        Connection conn = this.database.getConnection();
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schemaName + ".Price WHERE product_id = ? AND store_id = ?");
+        stmt.setInt(1, product.getId());
+        stmt.setInt(2, store.getId());
+        Price price = null;
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            price = new Price(rs.getInt("id"), rs.getInt("product_id"), rs.getInt("store_id"), rs.getInt("cents"), rs.getTimestamp("created").toString());
+        }
+        rs.close();
+        stmt.close();
+        conn.close();
+        return price;
+    }
+   
     public void addWithCurrentTimestamp(Product product, Store store, int cents, String schemaName) throws URISyntaxException, SQLException {
         Connection conn = this.database.getConnection();
         PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + schemaName + ".Price (product_id, store_id, cents) VALUES (?, ?, ?)");
@@ -45,19 +61,19 @@ public class PriceDao {
         stmt.setInt(3, cents);
 
         stmt.executeUpdate();
-        
+
         stmt.close();
         conn.close();
     }
-    
+
     public void delete(Product product, Store store, String schemaName) throws URISyntaxException, SQLException {
         Connection conn = this.database.getConnection();
         PreparedStatement stmt = conn.prepareStatement("DELETE FROM " + schemaName + ".Price WHERE product_id = ? AND store_id = ?");
         stmt.setInt(1, product.getId());
         stmt.setInt(2, store.getId());
-        
+
         stmt.executeUpdate();
-        
+
         stmt.close();
         conn.close();
     }
