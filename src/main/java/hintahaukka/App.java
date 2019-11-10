@@ -113,7 +113,7 @@ public class App {
     
     static String addPriceToGivenSchema(String schemaName, Request req, Response res) {
         // Input validation:
-        if(!eanCentStoreIdOk(req)) {
+        if(!eanCentsStoreIdIdOk(req)) {
             res.status(400);
             return "Input error!";
         }
@@ -199,21 +199,22 @@ public class App {
         return true;
     }
     
-    static boolean eanCentStoreIdOk(Request req){
-        if(req.queryParams().size() != 3) {
+    static boolean eanCentsStoreIdIdOk(Request req){
+        if(req.queryParams().size() != 4) {
             return false;
         }
-        if(!req.queryParams().contains("ean") || !req.queryParams().contains("cents") || !req.queryParams().contains("storeId")) {
+        if(!req.queryParams().contains("ean") || !req.queryParams().contains("cents") || !req.queryParams().contains("storeId") || !req.queryParams().contains("id")) {
             return false;
         }
-        if(req.queryParamsValues("ean").length != 1 || req.queryParamsValues("cents").length != 1 || req.queryParamsValues("storeId").length != 1) {
-            return false;
-        }
-        
-        if(req.queryParams("ean").length() < 8 || req.queryParams("storeId").length() < 1) {
+        if(req.queryParamsValues("ean").length != 1 || req.queryParamsValues("cents").length != 1 || req.queryParamsValues("storeId").length != 1 || req.queryParamsValues("id").length != 1) {
             return false;
         }
         
+        if(req.queryParams("ean").length() < 8 || req.queryParams("storeId").length() < 1 || req.queryParams("id").length() < 33) {
+            return false;
+        }
+        
+        // Cents value check.
         int cents = 0;
         try{
             cents = Integer.parseInt(req.queryParams("cents"));
@@ -221,6 +222,17 @@ public class App {
             return false;
         }
         if(cents < 0) {
+            return false;
+        }
+        
+        // Id value check of the tokenAndId.
+        int id = 0;
+        try{ 
+            id = Integer.parseInt(req.queryParams("id").substring(32));
+        }catch(Exception e){
+            return false;
+        }
+        if(id < 1) {
             return false;
         }
         
@@ -242,6 +254,7 @@ public class App {
             return false;
         }
         
+        // Id value check of the tokenAndId.
         int id = 0;
         try{ 
             id = Integer.parseInt(req.queryParams("id").substring(32));
