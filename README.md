@@ -20,7 +20,7 @@
 
 ## Backendin dokumentaatio
 * [Tietosisältökaavio](https://github.com/Hintahaukka/backend/blob/master/documentation/tietosisaltokaavio.png)
-* [Rajapinta](https://github.com/Hintahaukka/backend/blob/master/documentation/rajapinta.xlsx)
+* [Rajapinta](https://docs.google.com/spreadsheets/d/1Mazq4EFbfbMsLPeCpOckbu11LNR1Ki2RiNf460z-rpU/edit#gid=1349149505)
 
 ## Branch -käytännöt
 
