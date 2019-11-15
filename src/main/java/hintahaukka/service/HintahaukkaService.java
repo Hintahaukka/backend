@@ -145,13 +145,17 @@ public class HintahaukkaService {
      * @param tokenAndId User id
      * @param priceBefore The newest price before user's addition
      * @param priceAfter The price added by user
+     * @param productNamePoints Should the user be given points for adding a name for a product.
      * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
      * @return User object with added points
      */
-    public User addPointsToUser(String tokenAndId, Price priceBefore, Price priceAfter, String schemaName) {
+    public User addPointsToUser(String tokenAndId, Price priceBefore, Price priceAfter, boolean productNamePoints, String schemaName) {
         int newPoints = countPoints(priceBefore, priceAfter);
+        if(productNamePoints) newPoints += 5;
+        
         int id = Integer.parseInt(tokenAndId.substring(32));
         String token = tokenAndId.substring(0, 32);
+        
         try {
             User user = userDao.findOne(id, token, schemaName);
             if (user == null) {
@@ -227,6 +231,19 @@ public class HintahaukkaService {
             return null;
         }
         return price;
+    }
+    
+    public boolean updateProductName(String ean, String newProductName, String schemaName) {
+        boolean success = false;
+        
+        try{
+            success = productDao.updateName(ean, newProductName, schemaName);
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return false;
+        }
+        
+        return success;
     }
         
     Product getProductFromDbAddProductToDbIfNecessary(String ean, String schemaName) {

@@ -104,7 +104,7 @@ public class HintahaukkaServiceTest {
         Price priceBefore = service.latestPrice("1", "1", "test");
         Product product2 = service.addThePriceOfGivenProductToDatabase("1", 120, "2", "test");
         Price priceAfter = service.latestPrice("1", "1", "test");
-        User user = service.addPointsToUser(tokenAndId, priceBefore, priceAfter, "test");
+        User user = service.addPointsToUser(tokenAndId, priceBefore, priceAfter, false, "test");
         assertTrue(user.getPointsTotal() == 0);
         assertTrue(user.getPointsUnused() == 0);
     }
@@ -115,7 +115,7 @@ public class HintahaukkaServiceTest {
         Price priceBefore = service.latestPrice("1", "1", "test");
         Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "test");
         Price priceAfter = service.latestPrice("1", "1", "test");
-        User user = service.addPointsToUser(tokenAndId, priceBefore, priceAfter, "test");
+        User user = service.addPointsToUser(tokenAndId, priceBefore, priceAfter, false, "test");
         assertFalse(user.getPointsTotal() == 0);
         assertFalse(user.getPointsUnused() == 0);
     }
@@ -134,5 +134,24 @@ public class HintahaukkaServiceTest {
         
         after = new Price(1, 1, 1, 120, "2020-03-01 20:01:12.066");
         assertTrue(service.countPoints(before, after) == 9);
+    }
+    
+    @Test
+    public void productNameIsUpdated() {
+        service.addThePriceOfGivenProductToDatabase("1", 100, "1", "test");
+        service.updateProductName("1", "Fazer Sininen", "test");
+        String productName = service.getProductFromDbAddProductToDbIfNecessary("1", "test").getName();
+        assertEquals("Fazer Sininen", productName);
+    }
+    
+    @Test
+    public void productNamePointsAreGiven() {
+        String tokenAndId = service.getNewId("test");
+        Price priceBefore = service.latestPrice("1", "1", "test");
+        Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "test");
+        Price priceAfter = service.latestPrice("1", "1", "test");
+        User user = service.addPointsToUser(tokenAndId, priceBefore, priceAfter, true, "test");
+        assertTrue(user.getPointsTotal() == 15);
+        assertTrue(user.getPointsUnused() == 15);
     }
 }

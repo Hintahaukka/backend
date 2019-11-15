@@ -113,7 +113,7 @@ public class App {
     
     static String addPriceToGivenSchema(String schemaName, Request req, Response res) {
         // Input validation:
-        if(!eanCentsStoreIdIdOk(req)) {
+        if(!eanCentsStoreIdIdOkMaybeProductName(req)) {
             res.status(400);
             return "Input error!";
         }
@@ -123,12 +123,19 @@ public class App {
         int cents = Integer.parseInt(req.queryParams("cents"));
         String storeId = req.queryParams("storeId");
         String tokenAndId = req.queryParams("id");
+        String productName = null;
+        if(req.queryParams().contains("productName")) productName = req.queryParams("productName");
 
         // Hintahaukka logic:
         Price priceBefore = service.latestPrice(ean, storeId, schemaName);
         Product product = service.addThePriceOfGivenProductToDatabase(ean, cents, storeId, schemaName);
         Price priceAfter = service.latestPrice(ean, storeId, schemaName);
-        User user = service.addPointsToUser(tokenAndId, priceBefore, priceAfter, schemaName);
+        boolean productNamePoints = false;
+        if(productName != null){
+            productNamePoints = true;
+            service.updateProductName(ean, productName, schemaName);
+        }
+        User user = service.addPointsToUser(tokenAndId, priceBefore, priceAfter, productNamePoints, schemaName);
 
         // Build and send HTTP response:
         if(product == null || user == null) {  // Error response.
@@ -199,18 +206,29 @@ public class App {
         return true;
     }
     
-    static boolean eanCentsStoreIdIdOk(Request req){
-        if(req.queryParams().size() != 4) {
+    static boolean eanCentsStoreIdIdOkMaybeProductName(Request req){
+        if(req.queryParams().size() != 4 && req.queryParams().size() != 5) {
             return false;
         }
+        
         if(!req.queryParams().contains("ean") || !req.queryParams().contains("cents") || !req.queryParams().contains("storeId") || !req.queryParams().contains("id")) {
             return false;
         }
+        if(req.queryParams().size() == 5 && !req.queryParams().contains("productName")){
+            return false;
+        }
+        
         if(req.queryParamsValues("ean").length != 1 || req.queryParamsValues("cents").length != 1 || req.queryParamsValues("storeId").length != 1 || req.queryParamsValues("id").length != 1) {
+            return false;
+        }
+        if(req.queryParams().size() == 5 && req.queryParamsValues("productName").length != 1){
             return false;
         }
         
         if(req.queryParams("ean").length() < 8 || req.queryParams("storeId").length() < 1 || req.queryParams("id").length() < 33) {
+            return false;
+        }
+        if(req.queryParams().size() == 5 && req.queryParams("productName").length() > 150){
             return false;
         }
         
