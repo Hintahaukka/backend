@@ -15,8 +15,14 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class HintahaukkaService {
     
@@ -133,8 +139,112 @@ public class HintahaukkaService {
         
         return success;
     }
-
     
+    /**
+     * Adds points to the user depending on how long ago a price was previously added for the same product in the same store.
+     * @param tokenAndId User id
+     * @param newPoints Amount of points to be given to the user.
+     * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
+     * @return User object with added points
+     */
+    public User addPointsToUser(String tokenAndId, int newPoints, String schemaName) {
+        int id = Integer.parseInt(tokenAndId.substring(32));
+        String token = tokenAndId.substring(0, 32);
+        
+        try {
+            User user = userDao.findOne(id, token, schemaName);
+            if (user == null) {
+                return null;
+            }
+            int pointsTotal = user.getPointsTotal() + newPoints;
+            int pointsUnused = user.getPointsUnused() + newPoints;
+            userDao.updatePointsTotal(id, token, pointsTotal, schemaName);
+            userDao.updatePointsUnused(id, token, pointsUnused, schemaName);
+            return userDao.findOne(id, token, schemaName);
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
+    }
+    
+    /**
+     * Counts points based on how far apart the timestamps of two price objects are.
+     * @param before The old price
+     * @param after The new price
+     * @return points deserved
+     */
+    public static int countPoints(Price before, Price after) {
+        if (after == null) {
+            return 0;
+        }
+        // price was never added before
+        if (before == null) {
+            return 10;
+        }
+        String dateFirst = before.getCreated();
+        String dateLast = after.getCreated();
+        long differenceInDays = differenceInDays(dateFirst, dateLast);
+        if (differenceInDays >= 90) {
+            return 9;
+        } else if (differenceInDays >= 20) {
+            return (int) differenceInDays / 10;
+        } else if (differenceInDays >= 1) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    
+    private static long differenceInDays(String dateFirst, String dateLast) {
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+            Date firstDate = dateFormat.parse(dateFirst);
+            Date lastDate = dateFormat.parse(dateLast);
+            long diffInMillis = lastDate.getTime() - firstDate.getTime();
+            return TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            return 0l;
+        }
+    }
+    
+    /**
+     * Finds the latest price added for a product in a store.
+     * @param ean The EAN code of the product
+     * @param storeId The id of the store
+     * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
+     * @return The latest price
+     */
+    public Price latestPrice(String ean, String storeId, String schemaName) {
+        Price price;
+        try {
+            Product product = productDao.findOne(ean, schemaName);
+            Store store = storeDao.findOne(storeId, schemaName);
+            price = priceDao.findOne(product, store, schemaName);
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
+        return price;
+    }
+    
+    public boolean updateProductNameAndAddPoints(String ean, String tokenAndId, String newProductName, String schemaName) {
+        boolean success = false;
+        
+        try{
+            Product product = productDao.findOne(ean, schemaName);
+            if(product.getName().equals("")){  // Check that product name is not already added.
+                addPointsToUser(tokenAndId, 5, schemaName);
+                success = productDao.updateName(ean, newProductName, schemaName);
+            }
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return false;
+        }
+        
+        return success;
+    }
+        
     Product getProductFromDbAddProductToDbIfNecessary(String ean, String schemaName) {
         Product product = null;
         

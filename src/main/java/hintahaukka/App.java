@@ -34,6 +34,10 @@ public class App {
             return updateNicknameToGivenSchema("public", req, res);
         });
         
+        post("/updateProductName", (req, res) -> {
+            return updateProductNameToGivenSchema("public", req, res);
+        });
+        
         
         post("/test/getInfoAndPrices", (req, res) -> {
             return getInfoAndPricesFromGivenSchema("test", req, res);
@@ -49,6 +53,10 @@ public class App {
         
         post("/test/updateNickname", (req, res) -> {
             return updateNicknameToGivenSchema("test", req, res);
+        });
+        
+        post("/test/updateProductName", (req, res) -> {
+            return updateProductNameToGivenSchema("test", req, res);
         });
         
         
@@ -113,7 +121,7 @@ public class App {
     
     static String addPriceToGivenSchema(String schemaName, Request req, Response res) {
         // Input validation:
-        if(!eanCentStoreIdOk(req)) {
+        if(!eanCentsStoreIdIdOk(req)) {
             res.status(400);
             return "Input error!";
         }
@@ -122,16 +130,20 @@ public class App {
         String ean = req.queryParams("ean");
         int cents = Integer.parseInt(req.queryParams("cents"));
         String storeId = req.queryParams("storeId");
-
+        String tokenAndId = req.queryParams("id");
+        
         // Hintahaukka logic:
+        Price priceBefore = service.latestPrice(ean, storeId, schemaName);
         Product product = service.addThePriceOfGivenProductToDatabase(ean, cents, storeId, schemaName);
+        Price priceAfter = service.latestPrice(ean, storeId, schemaName);
+        User user = service.addPointsToUser(tokenAndId, HintahaukkaService.countPoints(priceBefore, priceAfter), schemaName);
 
         // Build and send HTTP response:
-        if(product == null) {  // Error response.
+        if(product == null || user == null) {  // Error response.
             res.status(500);
             return "Server error!";
         }
-        return "success";
+        return "" + user.getPointsTotal() + ":" + user.getPointsUnused();
     }
     
     static String getNewIdWithGivenSchema(String schemaName, Request req, Response res) {
@@ -159,6 +171,29 @@ public class App {
 
         // Hintahaukka logic:
         boolean success = service.updateNickname(tokenAndId, newNickname, schemaName);
+
+        // Build and send HTTP response:
+        if(!success) {  // Error response.
+            res.status(500);
+            return "Server error!";
+        }
+        return "success";
+    } 
+    
+    static String updateProductNameToGivenSchema(String schemaName, Request req, Response res) {
+        // Input validation:
+        if(!eanIdProductNameOk(req)) {
+            res.status(400);
+            return "Input error!";
+        }
+        
+        // Extract information from the HTTP POST request:
+        String ean = req.queryParams("ean");
+        String tokenAndId = req.queryParams("id");
+        String newProductName = req.queryParams("productName");
+
+        // Hintahaukka logic:
+        boolean success = service.updateProductNameAndAddPoints(ean, tokenAndId, newProductName, schemaName);
 
         // Build and send HTTP response:
         if(!success) {  // Error response.
@@ -195,21 +230,33 @@ public class App {
         return true;
     }
     
-    static boolean eanCentStoreIdOk(Request req){
-        if(req.queryParams().size() != 3) {
-            return false;
-        }
-        if(!req.queryParams().contains("ean") || !req.queryParams().contains("cents") || !req.queryParams().contains("storeId")) {
-            return false;
-        }
-        if(req.queryParamsValues("ean").length != 1 || req.queryParamsValues("cents").length != 1 || req.queryParamsValues("storeId").length != 1) {
+    static boolean eanCentsStoreIdIdOk(Request req){
+        if(req.queryParams().size() != 4 && req.queryParams().size() != 5) {
             return false;
         }
         
-        if(req.queryParams("ean").length() < 8 || req.queryParams("storeId").length() < 1) {
+        if(!req.queryParams().contains("ean") || !req.queryParams().contains("cents") || !req.queryParams().contains("storeId") || !req.queryParams().contains("id")) {
+            return false;
+        }
+        if(req.queryParams().size() == 5 && !req.queryParams().contains("productName")){
             return false;
         }
         
+        if(req.queryParamsValues("ean").length != 1 || req.queryParamsValues("cents").length != 1 || req.queryParamsValues("storeId").length != 1 || req.queryParamsValues("id").length != 1) {
+            return false;
+        }
+        if(req.queryParams().size() == 5 && req.queryParamsValues("productName").length != 1){
+            return false;
+        }
+        
+        if(req.queryParams("ean").length() < 8 || req.queryParams("storeId").length() < 1 || req.queryParams("id").length() < 33) {
+            return false;
+        }
+        if(req.queryParams().size() == 5 && req.queryParams("productName").length() > 150){
+            return false;
+        }
+        
+        // Cents value check.
         int cents = 0;
         try{
             cents = Integer.parseInt(req.queryParams("cents"));
@@ -217,6 +264,17 @@ public class App {
             return false;
         }
         if(cents < 0) {
+            return false;
+        }
+        
+        // Id value check of the tokenAndId.
+        int id = 0;
+        try{ 
+            id = Integer.parseInt(req.queryParams("id").substring(32));
+        }catch(Exception e){
+            return false;
+        }
+        if(id < 1) {
             return false;
         }
         
@@ -238,6 +296,36 @@ public class App {
             return false;
         }
         
+        // Id value check of the tokenAndId.
+        int id = 0;
+        try{ 
+            id = Integer.parseInt(req.queryParams("id").substring(32));
+        }catch(Exception e){
+            return false;
+        }
+        if(id < 1) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    static boolean eanIdProductNameOk(Request req){
+        if(req.queryParams().size() != 3) {
+            return false;
+        }
+        
+        if(!req.queryParams().contains("ean") || !req.queryParams().contains("id") || !req.queryParams().contains("productName")) {
+            return false;
+        }
+        if(req.queryParamsValues("ean").length != 1 || req.queryParamsValues("id").length != 1 || req.queryParamsValues("productName").length != 1) {
+            return false;
+        }
+        if(req.queryParams("ean").length() < 8 || req.queryParams("id").length() < 33 || req.queryParams("productName").length() > 150) {
+            return false;
+        }
+        
+        // Id value check of the tokenAndId.
         int id = 0;
         try{ 
             id = Integer.parseInt(req.queryParams("id").substring(32));
