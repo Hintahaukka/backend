@@ -104,7 +104,7 @@ public class HintahaukkaServiceTest {
         Price priceBefore = service.latestPrice("1", "1", "test");
         Product product2 = service.addThePriceOfGivenProductToDatabase("1", 120, "2", "test");
         Price priceAfter = service.latestPrice("1", "1", "test");
-        User user = service.addPointsToUser(tokenAndId, priceBefore, priceAfter, "test");
+        User user = service.addPointsToUser(tokenAndId, HintahaukkaService.countPoints(priceBefore, priceAfter), "test");
         assertTrue(user.getPointsTotal() == 0);
         assertTrue(user.getPointsUnused() == 0);
     }
@@ -115,7 +115,7 @@ public class HintahaukkaServiceTest {
         Price priceBefore = service.latestPrice("1", "1", "test");
         Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "test");
         Price priceAfter = service.latestPrice("1", "1", "test");
-        User user = service.addPointsToUser(tokenAndId, priceBefore, priceAfter, "test");
+        User user = service.addPointsToUser(tokenAndId, HintahaukkaService.countPoints(priceBefore, priceAfter), "test");
         assertFalse(user.getPointsTotal() == 0);
         assertFalse(user.getPointsUnused() == 0);
     }
@@ -135,4 +135,22 @@ public class HintahaukkaServiceTest {
         after = new Price(1, 1, 1, 120, "2020-03-01 20:01:12.066");
         assertTrue(service.countPoints(before, after) == 9);
     }
+    
+    
+    
+    @Test
+    public void productNameIsUpdatedAndPointsAreGiven() {
+        String tokenAndId = service.getNewId("test");
+        service.addThePriceOfGivenProductToDatabase("1", 100, "1", "test");
+        
+        service.updateProductNameAndAddPoints("1", tokenAndId, "Fazer Sininen", "test");
+        
+        String productName = service.getProductFromDbAddProductToDbIfNecessary("1", "test").getName();
+        assertEquals("Fazer Sininen", productName);
+        
+        User user = service.addPointsToUser(tokenAndId, 0, "test");
+        assertTrue(user.getPointsTotal() == 5);
+        assertTrue(user.getPointsUnused() == 5);
+    }
+    
 }

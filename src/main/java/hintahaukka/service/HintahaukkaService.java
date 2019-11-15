@@ -143,15 +143,14 @@ public class HintahaukkaService {
     /**
      * Adds points to the user depending on how long ago a price was previously added for the same product in the same store.
      * @param tokenAndId User id
-     * @param priceBefore The newest price before user's addition
-     * @param priceAfter The price added by user
+     * @param newPoints Amount of points to be given to the user.
      * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
      * @return User object with added points
      */
-    public User addPointsToUser(String tokenAndId, Price priceBefore, Price priceAfter, String schemaName) {
-        int newPoints = countPoints(priceBefore, priceAfter);
+    public User addPointsToUser(String tokenAndId, int newPoints, String schemaName) {
         int id = Integer.parseInt(tokenAndId.substring(32));
         String token = tokenAndId.substring(0, 32);
+        
         try {
             User user = userDao.findOne(id, token, schemaName);
             if (user == null) {
@@ -174,7 +173,7 @@ public class HintahaukkaService {
      * @param after The new price
      * @return points deserved
      */
-    public int countPoints(Price before, Price after) {
+    public static int countPoints(Price before, Price after) {
         if (after == null) {
             return 0;
         }
@@ -196,7 +195,7 @@ public class HintahaukkaService {
         }
     }
     
-    private long differenceInDays(String dateFirst, String dateLast) {
+    private static long differenceInDays(String dateFirst, String dateLast) {
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
             Date firstDate = dateFormat.parse(dateFirst);
@@ -227,6 +226,23 @@ public class HintahaukkaService {
             return null;
         }
         return price;
+    }
+    
+    public boolean updateProductNameAndAddPoints(String ean, String tokenAndId, String newProductName, String schemaName) {
+        boolean success = false;
+        
+        try{
+            Product product = productDao.findOne(ean, schemaName);
+            if(product.getName().equals("")){  // Check that product name is not already added.
+                addPointsToUser(tokenAndId, 5, schemaName);
+                success = productDao.updateName(ean, newProductName, schemaName);
+            }
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return false;
+        }
+        
+        return success;
     }
         
     Product getProductFromDbAddProductToDbIfNecessary(String ean, String schemaName) {
