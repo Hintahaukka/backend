@@ -21,21 +21,15 @@ public class UserDao {
         stmt.setString(1, token);
 
         ResultSet rs = stmt.executeQuery();
-        if (rs.next()) {
-            User user = new User(rs.getInt("id"), token, null, 0, 0);
-
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return user;
-        } else {
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return null;
-        }
+        
+        User user = null;
+        if (rs.next()) user = new User(rs.getInt("id"), token, null, 0, 0);
+        
+        rs.close();
+        stmt.close();
+        conn.close();        
+        
+        return user;
     }
 
     public User findOne(int id, String token, String schemaName) throws URISyntaxException, SQLException {
@@ -45,13 +39,16 @@ public class UserDao {
         stmt.setString(2, token);
 
         ResultSet rs = stmt.executeQuery();
+        
         User user = null;
         if (rs.next()) {
             user = new User(rs.getInt("id"), rs.getString("token"), rs.getString("nickname"), rs.getInt("pointsTotal"), rs.getInt("pointsUnused"));
         }
+        
         rs.close();
         stmt.close();
         conn.close();
+        
         return user;
     }
 
@@ -63,13 +60,14 @@ public class UserDao {
         stmt.setString(3, token);
         
         ResultSet rs = stmt.executeQuery();
+        
         boolean found = false;
-        if (rs.next()) {
-            found = true;
-        }
+        if (rs.next()) found = true;
+
         rs.close();
         stmt.close();
         conn.close();
+        
         return found;
     }
 
@@ -81,13 +79,14 @@ public class UserDao {
         stmt.setString(3, token);
 
         ResultSet rs = stmt.executeQuery();
+        
         boolean found = false;
-        if (rs.next()) {
-            found = true;
-        }
+        if (rs.next()) found = true;
+
         rs.close();
         stmt.close();
         conn.close();
+        
         return found;
     }
 
@@ -99,19 +98,15 @@ public class UserDao {
         stmt.setString(3, token);
 
         ResultSet rs = stmt.executeQuery();
-        if (rs.next()) {
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return true;
-        } else {
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return false;
-        }
+        
+        boolean updated = false;
+        if (rs.next()) updated = true;
+        
+        rs.close();
+        stmt.close();
+        conn.close();
+        
+        return updated;
     }
 
 }

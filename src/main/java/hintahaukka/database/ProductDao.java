@@ -21,21 +21,17 @@ public class ProductDao {
         stmt.setString(1, ean);
 
         ResultSet rs = stmt.executeQuery();
+        
+        Product product = null;
         if (rs.next()) {
-            Product product = new Product(rs.getInt("id"), rs.getString("ean"), rs.getString("name"));
-
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return product;
-        } else {
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return null;
+            product = new Product(rs.getInt("id"), rs.getString("ean"), rs.getString("name"));
         }
+        
+        rs.close();
+        stmt.close();
+        conn.close();
+
+        return product;
     }
     
     public Product add(String ean, String name, String schemaName) throws URISyntaxException, SQLException {
@@ -45,21 +41,17 @@ public class ProductDao {
         stmt.setString(2, name);
 
         ResultSet rs = stmt.executeQuery();
+        
+        Product product = null;
         if (rs.next()) {
-            Product product = new Product(rs.getInt("id"), ean, name);
-
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return product;
-        } else {
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return null;
+            product = new Product(rs.getInt("id"), ean, name);
         }
+        
+        rs.close();
+        stmt.close();
+        conn.close();
+
+        return product;
     }
     
     public boolean updateName(String ean, String newName, String schemaName) throws URISyntaxException, SQLException {
@@ -69,19 +61,15 @@ public class ProductDao {
         stmt.setString(2, ean);
 
         ResultSet rs = stmt.executeQuery();
-        if (rs.next()) {
-            rs.close();
-            stmt.close();
-            conn.close();
+        
+        boolean updated = false;
+        if (rs.next()) updated = true;
+        
+        rs.close();
+        stmt.close();
+        conn.close();
 
-            return true;
-        } else {
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return false;
-        }
+        return updated;
     }
 
 }

@@ -20,22 +20,18 @@ public class StoreDao {
         PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schemaName + ".Store WHERE googleStoreId = ?");
         stmt.setString(1, googleStoreId);
 
-        ResultSet rs = stmt.executeQuery();       
+        ResultSet rs = stmt.executeQuery();   
+        
+        Store store = null;
         if (rs.next()) {
-            Store store = new Store(rs.getInt("id"), rs.getString("googleStoreId"), rs.getString("name"));
-
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return store;
-        } else {
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return null;
+            store = new Store(rs.getInt("id"), rs.getString("googleStoreId"), rs.getString("name"));
         }
+        
+        rs.close();
+        stmt.close();
+        conn.close();
+        
+        return store;
     }
     
     public Store findOne(int id, String schemaName) throws URISyntaxException, SQLException {
@@ -44,21 +40,17 @@ public class StoreDao {
         stmt.setInt(1, id);
 
         ResultSet rs = stmt.executeQuery();
+        
+        Store store = null;
         if (rs.next()) {
-            Store store = new Store(rs.getInt("id"), rs.getString("googleStoreId"), rs.getString("name"));
-
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return store;
-        } else {
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return null;
+            store = new Store(rs.getInt("id"), rs.getString("googleStoreId"), rs.getString("name"));
         }
+        
+        rs.close();
+        stmt.close();
+        conn.close();
+        
+        return store;
     }
     
     public Store add(String googleStoreId, String name, String schemaName) throws URISyntaxException, SQLException {
@@ -68,21 +60,17 @@ public class StoreDao {
         stmt.setString(2, name);
 
         ResultSet rs = stmt.executeQuery();
+        
+        Store store = null;
         if (rs.next()) {
-            Store store = new Store(rs.getInt("id"), googleStoreId, name);
-
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return store;
-        } else {
-            rs.close();
-            stmt.close();
-            conn.close();
-
-            return null;
+            store = new Store(rs.getInt("id"), googleStoreId, name);
         }
+        
+        rs.close();
+        stmt.close();
+        conn.close();
+        
+        return store;
     }
 
 }
