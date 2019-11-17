@@ -60,4 +60,4 @@ gradle test
 Jos kyseessä Windows, syötä PowerShell:iin komento:  
 gradle run
 
-Kun backend-palvelin on käynnistetty, voit testata palvelimen rajapintaa tämän repositorion kansiosta "tools" löytyvällä HTML-lomakkeella "BackendRajapinnanTestaus.html".
+Kun backend-palvelin on käynnistetty, voit testata palvelimen rajapintaa tämän repositorion kansiosta "tools" löytyvällä HTML-lomakkeella "BackendRajapinnanTestaus.html". 
