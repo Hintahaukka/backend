@@ -37,7 +37,34 @@ public class Database {
         if (countTables(schemaName) == statements.length) {
             executeStatements(new String[]{"DROP SCHEMA IF EXISTS " + schemaName + " CASCADE"});
         }        
-    }    
+    }
+    
+    Object executeQueryAndExpectOneResult(String statement, PreparedStatementHandler prepHandler, ResultSetHandler resHandler) throws URISyntaxException, SQLException {
+        Connection conn = this.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(statement);
+        prepHandler.handlePreparedStatement(stmt);
+        
+        ResultSet rs = stmt.executeQuery();
+
+        Object object = null;
+        if (rs.next()) {
+            object = resHandler.handleResultSet(rs);
+        }
+        
+        rs.close();
+        stmt.close();
+        conn.close();
+        
+        return object;
+    }
+    
+    interface PreparedStatementHandler {
+        public void handlePreparedStatement(PreparedStatement statement) throws SQLException; 
+    }
+    
+    interface ResultSetHandler {
+        public Object handleResultSet(ResultSet rs) throws SQLException; 
+    }
     
     
     int countTables(String schemaName) throws URISyntaxException, SQLException {
