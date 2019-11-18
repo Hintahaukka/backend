@@ -124,11 +124,11 @@ public class HintahaukkaService {
         return newId;
     }
     
-    public boolean updateNickname(String tokenAndId, String newNickname, String schemaName) {
+    public Boolean updateNickname(String tokenAndId, String newNickname, String schemaName) {
         int id = Integer.parseInt(tokenAndId.substring(32));
         String token = tokenAndId.substring(0, 32);
         
-        boolean success = false;
+        Boolean success = null;
         
         try{
             success = userDao.updateNickname(id, token, newNickname, schemaName);
@@ -228,8 +228,8 @@ public class HintahaukkaService {
         return price;
     }
     
-    public boolean updateProductNameAndAddPoints(String ean, String tokenAndId, String newProductName, String schemaName) {
-        boolean success = false;
+    public Boolean updateProductNameAndAddPoints(String ean, String tokenAndId, String newProductName, String schemaName) {
+        Boolean success = null;
         
         try{
             Product product = productDao.findOne(ean, schemaName);

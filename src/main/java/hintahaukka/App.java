@@ -170,10 +170,10 @@ public class App {
         String newNickname = req.queryParams("nickname");
 
         // Hintahaukka logic:
-        boolean success = service.updateNickname(tokenAndId, newNickname, schemaName);
+        Boolean success = service.updateNickname(tokenAndId, newNickname, schemaName);
 
         // Build and send HTTP response:
-        if(!success) {  // Error response.
+        if(success == null) {  // Error response.
             res.status(500);
             return "Server error!";
         }
@@ -193,10 +193,10 @@ public class App {
         String newProductName = req.queryParams("productName");
 
         // Hintahaukka logic:
-        boolean success = service.updateProductNameAndAddPoints(ean, tokenAndId, newProductName, schemaName);
+        Boolean success = service.updateProductNameAndAddPoints(ean, tokenAndId, newProductName, schemaName);
 
         // Build and send HTTP response:
-        if(!success) {  // Error response.
+        if(success == null) {  // Error response.
             res.status(500);
             return "Server error!";
         }

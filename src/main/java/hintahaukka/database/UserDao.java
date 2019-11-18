@@ -1,9 +1,6 @@
 package hintahaukka.database;
 
 import hintahaukka.domain.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.net.URISyntaxException;
 
@@ -16,97 +13,45 @@ public class UserDao {
     }
 
     public User add(String token, String schemaName) throws URISyntaxException, SQLException {
-        Connection conn = this.database.getConnection();
-        PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + schemaName + ".User (token) VALUES (?) RETURNING id");
-        stmt.setString(1, token);
-
-        ResultSet rs = stmt.executeQuery();
-        
-        User user = null;
-        if (rs.next()) user = new User(rs.getInt("id"), token, null, 0, 0);
-        
-        rs.close();
-        stmt.close();
-        conn.close();        
-        
-        return user;
+        return (User) database.executeQueryAndExpectOneResult("INSERT INTO " + schemaName + ".User (token) VALUES (?) RETURNING id", statement -> {
+            statement.setString(1, token);       
+        }, resultSet -> 
+            new User(resultSet.getInt("id"), token, null, 0, 0));
     }
 
     public User findOne(int id, String token, String schemaName) throws URISyntaxException, SQLException {
-        Connection conn = this.database.getConnection();
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schemaName + ".User WHERE id = ? AND token = ?");
-        stmt.setInt(1, id);
-        stmt.setString(2, token);
-
-        ResultSet rs = stmt.executeQuery();
-        
-        User user = null;
-        if (rs.next()) {
-            user = new User(rs.getInt("id"), rs.getString("token"), rs.getString("nickname"), rs.getInt("pointsTotal"), rs.getInt("pointsUnused"));
-        }
-        
-        rs.close();
-        stmt.close();
-        conn.close();
-        
-        return user;
+        return (User) database.executeQueryAndExpectOneResult("SELECT * FROM " + schemaName + ".User WHERE id = ? AND token = ?", statement -> {
+            statement.setInt(1, id);
+            statement.setString(2, token);     
+        }, resultSet -> 
+            new User(resultSet.getInt("id"), resultSet.getString("token"), resultSet.getString("nickname"), resultSet.getInt("pointsTotal"), resultSet.getInt("pointsUnused")));
     }
 
-    public boolean updatePointsTotal(int id, String token, int newPointsTotal, String schemaName) throws URISyntaxException, SQLException {
-        Connection conn = this.database.getConnection();
-        PreparedStatement stmt = conn.prepareStatement("UPDATE " + schemaName + ".User SET pointsTotal = ? WHERE id = ? AND token = ? RETURNING id");
-        stmt.setInt(1, newPointsTotal);
-        stmt.setInt(2, id);
-        stmt.setString(3, token);
-        
-        ResultSet rs = stmt.executeQuery();
-        
-        boolean found = false;
-        if (rs.next()) found = true;
-
-        rs.close();
-        stmt.close();
-        conn.close();
-        
-        return found;
+    public Boolean updatePointsTotal(int id, String token, int newPointsTotal, String schemaName) throws URISyntaxException, SQLException {
+        return (Boolean) database.executeQueryAndExpectOneResult("UPDATE " + schemaName + ".User SET pointsTotal = ? WHERE id = ? AND token = ? RETURNING id", statement -> {
+            statement.setInt(1, newPointsTotal);
+            statement.setInt(2, id);
+            statement.setString(3, token);
+        }, resultSet -> 
+            Boolean.TRUE);
     }
 
-    public boolean updatePointsUnused(int id, String token, int newPointsUnused, String schemaName) throws URISyntaxException, SQLException {
-        Connection conn = this.database.getConnection();
-        PreparedStatement stmt = conn.prepareStatement("UPDATE " + schemaName + ".User SET pointsUnused = ? WHERE id = ? AND token = ? RETURNING id");
-        stmt.setInt(1, newPointsUnused);
-        stmt.setInt(2, id);
-        stmt.setString(3, token);
-
-        ResultSet rs = stmt.executeQuery();
-        
-        boolean found = false;
-        if (rs.next()) found = true;
-
-        rs.close();
-        stmt.close();
-        conn.close();
-        
-        return found;
+    public Boolean updatePointsUnused(int id, String token, int newPointsUnused, String schemaName) throws URISyntaxException, SQLException {
+        return (Boolean) database.executeQueryAndExpectOneResult("UPDATE " + schemaName + ".User SET pointsUnused = ? WHERE id = ? AND token = ? RETURNING id", statement -> {
+            statement.setInt(1, newPointsUnused);
+            statement.setInt(2, id);
+            statement.setString(3, token);
+        }, resultSet -> 
+            Boolean.TRUE);
     }
 
-    public boolean updateNickname(int id, String token, String newNickname, String schemaName) throws URISyntaxException, SQLException {
-        Connection conn = this.database.getConnection();
-        PreparedStatement stmt = conn.prepareStatement("UPDATE " + schemaName + ".User SET nickname = ? WHERE id = ? AND token = ? RETURNING id");
-        stmt.setString(1, newNickname);
-        stmt.setInt(2, id);
-        stmt.setString(3, token);
-
-        ResultSet rs = stmt.executeQuery();
-        
-        boolean updated = false;
-        if (rs.next()) updated = true;
-        
-        rs.close();
-        stmt.close();
-        conn.close();
-        
-        return updated;
+    public Boolean updateNickname(int id, String token, String newNickname, String schemaName) throws URISyntaxException, SQLException {
+        return (Boolean) database.executeQueryAndExpectOneResult("UPDATE " + schemaName + ".User SET nickname = ? WHERE id = ? AND token = ? RETURNING id", statement -> {
+            statement.setString(1, newNickname);
+            statement.setInt(2, id);
+            statement.setString(3, token);
+        }, resultSet -> 
+            Boolean.TRUE);
     }
 
 }
