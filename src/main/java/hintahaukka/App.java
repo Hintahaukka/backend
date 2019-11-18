@@ -292,7 +292,7 @@ public class App {
             return false;
         }
         
-        if(req.queryParams("id").length() < 33 || req.queryParams("nickname").length() < 1) {
+        if(req.queryParams("id").length() < 33 || req.queryParams("nickname").length() < 2 || req.queryParams("nickname").length() > 20) {
             return false;
         }
         
