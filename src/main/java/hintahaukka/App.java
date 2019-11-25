@@ -321,7 +321,7 @@ public class App {
         if(req.queryParamsValues("ean").length != 1 || req.queryParamsValues("id").length != 1 || req.queryParamsValues("productName").length != 1) {
             return false;
         }
-        if(req.queryParams("ean").length() < 8 || req.queryParams("id").length() < 33 || req.queryParams("productName").length() > 150) {
+        if(req.queryParams("ean").length() < 8 || req.queryParams("id").length() < 33 || req.queryParams("productName").length() > 150 || req.queryParams("productName").length() < 2) {
             return false;
         }
         
