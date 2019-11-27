@@ -188,6 +188,31 @@ public class HintahaukkaService {
         return storesResult;
     }
     
+    public ArrayList<PriceTransferUnit> priceOfGivenProductInDifferentStoresWithNoInfo(String ean, String schemaName) {
+        Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
+        if(product == null) return null;
+        
+        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
+        try{
+            // Get all prices for the product from the database.
+            ArrayList<Price> prices = priceDao.findAllForProduct(product, schemaName);
+
+            // For every price of the product, find out from what store the price is from.
+            for(Price price : prices) {
+                ptuList.add(new PriceTransferUnit(
+                        price.getCents(), 
+                        storeDao.findOne(price.getStoreId(), schemaName).getGoogleStoreId(),
+                        price.getCreated()
+                ));
+            }            
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
+        
+        return ptuList;
+    }
+    
     /**
      * When Hintahaukka app is launched for the first time on a phone, this method implements logic
      * to serve the http query which the app made in order to get a unique ID which is later used to identify the user.

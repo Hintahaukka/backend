@@ -43,6 +43,10 @@ public class App {
             return getPricesForManyProductsFromGivenSchema("public", req, res);
         });
         
+        post("/getPricesForOneProduct", (req, res) -> {
+            return getPricesForOneProductFromGivenSchema("public", req, res);
+        });
+        
         
         post("/test/getInfoAndPrices", (req, res) -> {
             return getInfoAndPricesFromGivenSchema("test", req, res);
@@ -66,6 +70,10 @@ public class App {
         
         post("/test/getPricesForManyProducts", (req, res) -> {
             return getPricesForManyProductsFromGivenSchema("test", req, res);
+        });
+        
+        post("/test/getPricesForOneProduct", (req, res) -> {
+            return getPricesForOneProductFromGivenSchema("test", req, res);
         });
         
         
@@ -238,6 +246,30 @@ public class App {
         }
         res.type("application/json");
         String ptuListAsJSON = new Gson().toJson(resultWithPoints);
+        return ptuListAsJSON;
+    }
+    
+    static String getPricesForOneProductFromGivenSchema(String schemaName, Request req, Response res) {
+        // Input validation:
+        if(!IdEanOk(req)) {
+            res.status(400);
+            return "Input error!";
+        }
+        
+        // Extract information from the HTTP POST request:
+        String ean = req.queryParams("ean");
+
+        // Hintahaukka logic:
+        ArrayList<PriceTransferUnit> ptuList = service.priceOfGivenProductInDifferentStoresWithNoInfo(ean, schemaName);
+        PointsAndPrices result = new PointsAndPrices(100, 50, ptuList);
+
+        // Build and send HTTP response:
+        if(ptuList == null) {  // Error response.
+            res.status(500);
+            return "Server error!";
+        }
+        res.type("application/json");
+        String ptuListAsJSON = new Gson().toJson(result);
         return ptuListAsJSON;
     }
 
@@ -417,6 +449,36 @@ public class App {
             }            
             
             ++i;
+        }
+        
+        return true;
+    }
+    
+    static boolean IdEanOk(Request req){
+        if(req.queryParams().size() != 2) {
+            return false;
+        }
+        
+        if(!req.queryParams().contains("id") || !req.queryParams().contains("ean")) {
+            return false;
+        }
+        if(req.queryParamsValues("id").length != 1 || req.queryParamsValues("ean").length != 1) {
+            return false;
+        }
+        
+        if(req.queryParams("id").length() < 33 || req.queryParams("ean").length() < 8) {
+            return false;
+        }
+        
+        // Id value check of the tokenAndId.
+        int id = 0;
+        try{ 
+            id = Integer.parseInt(req.queryParams("id").substring(32));
+        }catch(Exception e){
+            return false;
+        }
+        if(id < 1) {
+            return false;
         }
         
         return true;
