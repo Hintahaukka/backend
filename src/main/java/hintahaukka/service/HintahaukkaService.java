@@ -20,6 +20,9 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -102,6 +105,87 @@ public class HintahaukkaService {
         }
         
         return new InfoAndPrices(product.getEan(), product.getName(), ptuList);
+    }
+    
+    public ArrayList<PricesOfStore> pricesOfGivenProductsInDifferentStores(String[] eans, String schemaName) {
+        HashMap<Integer, HashMap<String, PriceInStore>> stores = new HashMap<>();
+        
+        HashMap<String, Integer> averagePrices = new HashMap<>();
+        
+        // A loop which main task is to find the prices of a given product in different stores, and then assort these
+        // prices to the corresponfing stores.
+        for(String ean : eans) {
+            
+            Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
+            if(product == null) return null;
+
+            ArrayList<Price> prices;
+            try{
+                // Find the prices of a given product in different stores.
+                prices = priceDao.findAllForProduct(product, schemaName);
+            } catch(Exception e) {
+                System.out.println(e.toString());
+                return null;
+            }
+            
+            if(prices.isEmpty()) continue;
+            
+            int centsTotal = 0;
+            
+            // Assort prices to the corresponfing stores.
+            for(Price price : prices) {
+                HashMap<String, PriceInStore> store = stores.getOrDefault(price.getStoreId(), new HashMap<>());
+                store.put(product.getEan(), new PriceInStore(product.getEan(), price.getCents(), price.getCreated()));
+                stores.put(price.getStoreId(), store);
+
+                centsTotal += price.getCents();
+            }
+
+            // Average price for the product is also calculated.
+            int averagePrice = centsTotal / prices.size();
+            averagePrices.put(ean, averagePrice);
+        }
+        
+        ArrayList<PricesOfStore> storesResult = new ArrayList<>();
+
+        // A loop which main task is to order the prices of a store in correct order and to
+        // calculate the total sum of the prices in the store.
+        // If a store is missing a price for requested product, the price is replaced with the average price of the product.
+        for(Map.Entry<Integer, HashMap<String, PriceInStore>> store : stores.entrySet()) {
+            HashMap<String, PriceInStore> pricesInStore = store.getValue();
+            
+            // Stores have been handled with database row IDs up until now.
+            // Here we find out the googleStoreIDs for stores.
+            String googleStoreId;
+            try{
+                googleStoreId = storeDao.findOne(store.getKey(), schemaName).getGoogleStoreId();
+            } catch(Exception e) {
+                System.out.println(e.toString());
+                return null;
+            }
+            
+            int storeCentsTotal = 0;
+            ArrayList<PriceInStore> pricesInStoreAL = new ArrayList<>();
+            
+            // Main task of the loop:
+            for(String ean : eans) {
+                if(averagePrices.containsKey(ean)){
+                    pricesInStoreAL.add(pricesInStore.getOrDefault(ean, new PriceInStore(ean, averagePrices.get(ean), "")));
+                    storeCentsTotal += pricesInStoreAL.get(pricesInStoreAL.size() - 1).getCents();
+                }
+            }
+            
+            storesResult.add(new PricesOfStore(googleStoreId, storeCentsTotal, pricesInStoreAL));
+        }
+        
+        // The results are ordered according to the total sum of the prices in the store.
+        storesResult.sort((pos1, pos2) -> {
+            if(pos1.getStoreCentsTotal() < pos2.getStoreCentsTotal()) return -1;
+            else if(pos1.getStoreCentsTotal() == pos2.getStoreCentsTotal()) return 0;
+            else return 1;
+        });
+        
+        return storesResult;
     }
     
     /**

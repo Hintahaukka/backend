@@ -7,6 +7,7 @@ import static spark.Spark.*;
 import spark.Request;
 import spark.Response;
 import com.google.gson.Gson;
+import java.util.ArrayList;
 
 public class App {
     
@@ -38,6 +39,10 @@ public class App {
             return updateProductNameToGivenSchema("public", req, res);
         });
         
+        post("/getPricesForManyProducts", (req, res) -> {
+            return getPricesForManyProductsFromGivenSchema("public", req, res);
+        });
+        
         
         post("/test/getInfoAndPrices", (req, res) -> {
             return getInfoAndPricesFromGivenSchema("test", req, res);
@@ -57,6 +62,10 @@ public class App {
         
         post("/test/updateProductName", (req, res) -> {
             return updateProductNameToGivenSchema("test", req, res);
+        });
+        
+        post("/test/getPricesForManyProducts", (req, res) -> {
+            return getPricesForManyProductsFromGivenSchema("test", req, res);
         });
         
         
@@ -202,6 +211,35 @@ public class App {
         }
         return "success";
     }
+    
+    static String getPricesForManyProductsFromGivenSchema(String schemaName, Request req, Response res) {
+        // Input validation:
+        if(!IdEansOk(req)) {
+            res.status(400);
+            return "Input error!";
+        }
+        
+        // Extract information from the HTTP POST request:
+        String[] eans = new String[req.queryParams().size()];
+        int i = 1;
+        while(i < req.queryParams().size()) {  // One of the queryParams is id, so the amount of eans is size() - 1.
+            eans[i] = req.queryParams("ean" + i);
+            ++i;
+        }
+        
+        // Hintahaukka logic:
+        ArrayList<PricesOfStore> storesResult = service.pricesOfGivenProductsInDifferentStores(eans, schemaName);
+        PricesOfStoresAndPoints resultWithPoints = new PricesOfStoresAndPoints(100, 50, storesResult);
+
+        // Build and send HTTP response:
+        if(storesResult == null) {  // Error response.
+            res.status(500);
+            return "Server error!";
+        }
+        res.type("application/json");
+        String ptuListAsJSON = new Gson().toJson(resultWithPoints);
+        return ptuListAsJSON;
+    }
 
     static int getHerokuAssignedPort() {
         ProcessBuilder processBuilder = new ProcessBuilder();
@@ -334,6 +372,51 @@ public class App {
         }
         if(id < 1) {
             return false;
+        }
+        
+        return true;
+    }
+    
+    static boolean IdEansOk(Request req){
+        if(req.queryParams().size() < 2) {
+            return false;
+        }
+        
+        if(!req.queryParams().contains("id")) {
+            return false;
+        }
+        if(req.queryParamsValues("id").length != 1) {
+            return false;
+        }
+        
+        if(req.queryParams("id").length() < 33) {
+            return false;
+        }
+        
+        // Id value check of the tokenAndId.
+        int id = 0;
+        try{ 
+            id = Integer.parseInt(req.queryParams("id").substring(32));
+        }catch(Exception e){
+            return false;
+        }
+        if(id < 1) {
+            return false;
+        }
+        
+        int i = 1;
+        while(i < req.queryParams().size()) {
+            if(!req.queryParams().contains("ean" + i)) {
+                return false;
+            }
+            if(req.queryParamsValues("ean" + i).length != 1) {
+                return false;
+            }
+            if(req.queryParams("ean" + i).length() < 8) {
+                return false;
+            }            
+            
+            ++i;
         }
         
         return true;

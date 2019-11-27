@@ -2,6 +2,7 @@ package hintahaukka.service;
 
 import hintahaukka.database.*;
 import hintahaukka.domain.*;
+import java.util.ArrayList;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -151,6 +152,52 @@ public class HintahaukkaServiceTest {
         User user = service.addPointsToUser(tokenAndId, 0, "test");
         assertTrue(user.getPointsTotal() == 5);
         assertTrue(user.getPointsUnused() == 5);
+    }
+    
+    @Test
+    public void return4pricesFromCorrectStores() {
+        ArrayList<PricesOfStore> storesResult = null;
+        try {
+            service.addThePriceOfGivenProductToDatabase("1", 100, "1", "test");
+            service.addThePriceOfGivenProductToDatabase("2", 200, "1", "test");
+            service.addThePriceOfGivenProductToDatabase("2", 300, "2", "test");
+            service.addThePriceOfGivenProductToDatabase("3", 300, "2", "test");
+            storesResult = service.pricesOfGivenProductsInDifferentStores(new String[]{"1","2","3","4"}, "test");
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+        
+        assertEquals("1", storesResult.get(0).getGoogleStoreId());
+        assertEquals("2", storesResult.get(1).getGoogleStoreId());
+        assertEquals(600, storesResult.get(0).getStoreCentsTotal());
+        assertEquals(700, storesResult.get(1).getStoreCentsTotal());
+        
+        assertEquals(3, storesResult.get(0).getPricesInStore().size());
+        assertEquals(3, storesResult.get(1).getPricesInStore().size());
+        
+        assertEquals(100, storesResult.get(0).getPricesInStore().get(0).getCents());
+        assertEquals(200, storesResult.get(0).getPricesInStore().get(1).getCents());
+        assertEquals(300, storesResult.get(0).getPricesInStore().get(2).getCents());
+        
+        assertEquals(100, storesResult.get(1).getPricesInStore().get(0).getCents());
+        assertEquals(300, storesResult.get(1).getPricesInStore().get(1).getCents());
+        assertEquals(300, storesResult.get(1).getPricesInStore().get(2).getCents());
+        
+        assertEquals("1", storesResult.get(0).getPricesInStore().get(0).getEan());
+        assertEquals("2", storesResult.get(0).getPricesInStore().get(1).getEan());
+        assertEquals("3", storesResult.get(0).getPricesInStore().get(2).getEan());
+        
+        assertEquals("1", storesResult.get(1).getPricesInStore().get(0).getEan());
+        assertEquals("2", storesResult.get(1).getPricesInStore().get(1).getEan());
+        assertEquals("3", storesResult.get(1).getPricesInStore().get(2).getEan());
+        
+        assertTrue(!storesResult.get(0).getPricesInStore().get(0).getTimestamp().equals(""));
+        assertTrue(!storesResult.get(0).getPricesInStore().get(1).getTimestamp().equals(""));
+        assertTrue(storesResult.get(0).getPricesInStore().get(2).getTimestamp().equals(""));
+        
+        assertTrue(storesResult.get(1).getPricesInStore().get(0).getTimestamp().equals(""));
+        assertTrue(!storesResult.get(1).getPricesInStore().get(1).getTimestamp().equals(""));
+        assertTrue(!storesResult.get(1).getPricesInStore().get(2).getTimestamp().equals(""));
     }
     
 }
