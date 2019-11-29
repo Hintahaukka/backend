@@ -277,6 +277,38 @@ public class HintahaukkaService {
     }
     
     /**
+     * Consumes points from the user if the user has sufficient amount of unused points.
+     * @param tokenAndId User id
+     * @param pointsConsumed Amount of unused points to be consumed from the user.
+     * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
+     * @return User object with updated points, or null if the user didn't have sufficient amount of unused points.
+     */
+    public User consumePointsFromUser(String tokenAndId, int pointsConsumed, String schemaName) {
+        int id = Integer.parseInt(tokenAndId.substring(32));
+        String token = tokenAndId.substring(0, 32);
+        
+        try {
+            User user = userDao.findOne(id, token, schemaName);
+            if (user == null) {
+                return null;
+            }
+            
+            if(user.getPointsUnused() < pointsConsumed) return null;
+            
+            user.setPointsUnused(user.getPointsUnused() - pointsConsumed);
+            
+            if(!userDao.updatePointsUnused(id, token, user.getPointsUnused(), schemaName)){
+                return null;
+            }
+            
+            return user;
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
+    }
+    
+    /**
      * Counts points based on how far apart the timestamps of two price objects are.
      * @param before The old price
      * @param after The new price

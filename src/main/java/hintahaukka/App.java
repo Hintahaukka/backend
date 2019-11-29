@@ -228,6 +228,7 @@ public class App {
         }
         
         // Extract information from the HTTP POST request:
+        String tokenAndId = req.queryParams("id");
         String[] eans = new String[req.queryParams().size()];
         int i = 1;
         while(i < req.queryParams().size()) {  // One of the queryParams is id, so the amount of eans is size() - 1.
@@ -237,10 +238,13 @@ public class App {
         
         // Hintahaukka logic:
         ArrayList<PricesOfStore> storesResult = service.pricesOfGivenProductsInDifferentStores(eans, schemaName);
-        PricesOfStoresAndPoints resultWithPoints = new PricesOfStoresAndPoints(100, 50, storesResult);
+        User user = null;
+        if(storesResult != null) user = service.consumePointsFromUser(tokenAndId, eans.length, schemaName);
+        PricesOfStoresAndPoints resultWithPoints = null;
+        if(user != null) resultWithPoints = new PricesOfStoresAndPoints(user.getPointsTotal(), user.getPointsUnused(), storesResult);
 
         // Build and send HTTP response:
-        if(storesResult == null) {  // Error response.
+        if(storesResult == null ||  user == null) {  // Error response.
             res.status(500);
             return "Server error!";
         }
@@ -257,14 +261,18 @@ public class App {
         }
         
         // Extract information from the HTTP POST request:
+        String tokenAndId = req.queryParams("id");
         String ean = req.queryParams("ean");
 
         // Hintahaukka logic:
         ArrayList<PriceTransferUnit> ptuList = service.priceOfGivenProductInDifferentStoresWithNoInfo(ean, schemaName);
-        PointsAndPrices result = new PointsAndPrices(100, 50, ptuList);
+        User user = null;
+        if(ptuList != null) user = service.consumePointsFromUser(tokenAndId, 1, schemaName);
+        PointsAndPrices result = null;
+        if(user != null) result = new PointsAndPrices(user.getPointsTotal(), user.getPointsUnused(), ptuList);
 
         // Build and send HTTP response:
-        if(ptuList == null) {  // Error response.
+        if(ptuList == null ||  user == null) {  // Error response.
             res.status(500);
             return "Server error!";
         }
