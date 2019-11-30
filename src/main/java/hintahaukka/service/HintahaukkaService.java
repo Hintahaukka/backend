@@ -107,7 +107,7 @@ public class HintahaukkaService {
         return new InfoAndPrices(product.getEan(), product.getName(), ptuList);
     }
     
-    public ArrayList<PricesOfStore> pricesOfGivenProductsInDifferentStores(String[] eans, String schemaName) {
+    public PricesOfStoresAndPoints pricesOfGivenProductsInDifferentStores(String[] eans, String tokenAndId, String schemaName) {
         HashMap<Integer, HashMap<String, PriceInStore>> stores = new HashMap<>();
         
         HashMap<String, Integer> averagePrices = new HashMap<>();
@@ -185,10 +185,16 @@ public class HintahaukkaService {
             else return 1;
         });
         
-        return storesResult;
+        // Price information query consumes user's points.
+        User user = this.consumePointsFromUser(tokenAndId, eans.length, schemaName);
+        if(user == null) return null;
+        
+        PricesOfStoresAndPoints resultWithPoints = new PricesOfStoresAndPoints(user.getPointsTotal(), user.getPointsUnused(), storesResult);
+        
+        return resultWithPoints;
     }
     
-    public ArrayList<PriceTransferUnit> priceOfGivenProductInDifferentStoresWithNoInfo(String ean, String schemaName) {
+    public PointsAndPrices priceOfGivenProductInDifferentStoresWithNoInfo(String ean, String tokenAndId, String schemaName) {
         Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
         if(product == null) return null;
         
@@ -210,7 +216,12 @@ public class HintahaukkaService {
             return null;
         }
         
-        return ptuList;
+        User user = this.consumePointsFromUser(tokenAndId, 1, schemaName);
+        if(user == null) return null;
+        
+        PointsAndPrices result = new PointsAndPrices(user.getPointsTotal(), user.getPointsUnused(), ptuList);
+        
+        return result;
     }
     
     /**

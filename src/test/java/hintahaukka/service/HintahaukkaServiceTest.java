@@ -137,8 +137,6 @@ public class HintahaukkaServiceTest {
         assertTrue(service.countPoints(before, after) == 9);
     }
     
-    
-    
     @Test
     public void productNameIsUpdatedAndPointsAreGiven() {
         String tokenAndId = service.getNewId("test");
@@ -155,14 +153,19 @@ public class HintahaukkaServiceTest {
     }
     
     @Test
-    public void return4pricesFromCorrectStores() {
+    public void return4pricesFromCorrectStoresAndConsumePoints() {
+        String tokenAndId = service.getNewId("test");
+        service.addPointsToUser(tokenAndId, 10, "test");
+        
+        PricesOfStoresAndPoints result = null;
         ArrayList<PricesOfStore> storesResult = null;
         try {
             service.addThePriceOfGivenProductToDatabase("1", 100, "1", "test");
             service.addThePriceOfGivenProductToDatabase("2", 200, "1", "test");
             service.addThePriceOfGivenProductToDatabase("2", 300, "2", "test");
             service.addThePriceOfGivenProductToDatabase("3", 300, "2", "test");
-            storesResult = service.pricesOfGivenProductsInDifferentStores(new String[]{"1","2","3","4"}, "test");
+            result = service.pricesOfGivenProductsInDifferentStores(new String[]{"1","2","3","4"}, tokenAndId, "test");
+            storesResult = result.getPricesOfStores();
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -198,6 +201,53 @@ public class HintahaukkaServiceTest {
         assertTrue(storesResult.get(1).getPricesInStore().get(0).getTimestamp().equals(""));
         assertTrue(!storesResult.get(1).getPricesInStore().get(1).getTimestamp().equals(""));
         assertTrue(!storesResult.get(1).getPricesInStore().get(2).getTimestamp().equals(""));
+        
+        // User has correct points after the query:
+        assertEquals(10, result.getPointsTotal());
+        assertEquals(6, result.getPointsUnused());
     }
     
+    @Test
+    public void returnNullIfUserDoesNotHaveEnoughPointsForPriceQuery() {
+        String tokenAndId = service.getNewId("test");
+        service.addPointsToUser(tokenAndId, 3, "test");
+        
+        PricesOfStoresAndPoints result = null;
+        try {
+            service.addThePriceOfGivenProductToDatabase("1", 100, "1", "test");
+            service.addThePriceOfGivenProductToDatabase("2", 200, "1", "test");
+            service.addThePriceOfGivenProductToDatabase("2", 300, "2", "test");
+            service.addThePriceOfGivenProductToDatabase("3", 300, "2", "test");
+            result = service.pricesOfGivenProductsInDifferentStores(new String[]{"1","2","3","4"}, tokenAndId, "test");
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+        
+        assertNull(result);
+    }
+    
+    @Test
+    public void return2pricesFromCorrectStoresAndConsumePoints() {
+        String tokenAndId = service.getNewId("test");
+        service.addPointsToUser(tokenAndId, 10, "test");
+        
+        PointsAndPrices result = null;
+        ArrayList<PriceTransferUnit> prices = null;
+        try {
+            service.addThePriceOfGivenProductToDatabase("1", 100, "1", "test");
+            service.addThePriceOfGivenProductToDatabase("2", 200, "1", "test");
+            service.addThePriceOfGivenProductToDatabase("2", 300, "2", "test");
+            service.addThePriceOfGivenProductToDatabase("3", 300, "2", "test");
+            result = service.priceOfGivenProductInDifferentStoresWithNoInfo("2", tokenAndId, "test");
+            prices = result.getPrices();
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+        
+        assertEquals(2, prices.size());
+        
+        // User has correct points after the query:
+        assertEquals(10, result.getPointsTotal());
+        assertEquals(9, result.getPointsUnused());
+    }
 }

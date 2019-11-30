@@ -229,7 +229,7 @@ public class App {
         
         // Extract information from the HTTP POST request:
         String tokenAndId = req.queryParams("id");
-        String[] eans = new String[req.queryParams().size()];
+        String[] eans = new String[req.queryParams().size() - 1];
         int i = 1;
         while(i < req.queryParams().size()) {  // One of the queryParams is id, so the amount of eans is size() - 1.
             eans[i] = req.queryParams("ean" + i);
@@ -237,19 +237,15 @@ public class App {
         }
         
         // Hintahaukka logic:
-        ArrayList<PricesOfStore> storesResult = service.pricesOfGivenProductsInDifferentStores(eans, schemaName);
-        User user = null;
-        if(storesResult != null) user = service.consumePointsFromUser(tokenAndId, eans.length, schemaName);
-        PricesOfStoresAndPoints resultWithPoints = null;
-        if(user != null) resultWithPoints = new PricesOfStoresAndPoints(user.getPointsTotal(), user.getPointsUnused(), storesResult);
+        PricesOfStoresAndPoints result = service.pricesOfGivenProductsInDifferentStores(eans, tokenAndId, schemaName);
 
         // Build and send HTTP response:
-        if(storesResult == null ||  user == null) {  // Error response.
+        if(result == null) {  // Error response.
             res.status(500);
             return "Server error!";
         }
         res.type("application/json");
-        String ptuListAsJSON = new Gson().toJson(resultWithPoints);
+        String ptuListAsJSON = new Gson().toJson(result);
         return ptuListAsJSON;
     }
     
@@ -265,14 +261,10 @@ public class App {
         String ean = req.queryParams("ean");
 
         // Hintahaukka logic:
-        ArrayList<PriceTransferUnit> ptuList = service.priceOfGivenProductInDifferentStoresWithNoInfo(ean, schemaName);
-        User user = null;
-        if(ptuList != null) user = service.consumePointsFromUser(tokenAndId, 1, schemaName);
-        PointsAndPrices result = null;
-        if(user != null) result = new PointsAndPrices(user.getPointsTotal(), user.getPointsUnused(), ptuList);
+        PointsAndPrices result = service.priceOfGivenProductInDifferentStoresWithNoInfo(ean, tokenAndId, schemaName);
 
         // Build and send HTTP response:
-        if(ptuList == null ||  user == null) {  // Error response.
+        if(result == null) {  // Error response.
             res.status(500);
             return "Server error!";
         }
