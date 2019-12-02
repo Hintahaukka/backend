@@ -231,8 +231,8 @@ public class App {
         String tokenAndId = req.queryParams("id");
         String[] eans = new String[req.queryParams().size() - 1];
         int i = 1;
-        while(i < req.queryParams().size()) {  // One of the queryParams is id, so the amount of eans is size() - 1.
-            eans[i] = req.queryParams("ean" + i);
+        while(i < req.queryParams().size()) {  
+            eans[i - 1] = req.queryParams("ean" + i);
             ++i;
         }
         

@@ -9,18 +9,8 @@ import spark.Request;
 public class Validators {
     
     static boolean eanOk(Request req){
-        if(req.queryParams().size() != 1) {
-            return false;
-        }
-        if(!req.queryParams().contains("ean")) {
-            return false;
-        }
-        if(req.queryParamsValues("ean").length != 1) {
-            return false;
-        }
-        if(req.queryParams("ean").length() < 8) {
-            return false;
-        }
+        if(!basicParameterChecks(req, "ean") || !specialEanCheck(req)) return false;
+        
         return true;
     }
     
@@ -43,12 +33,14 @@ public class Validators {
             return false;
         }
         
-        if(req.queryParams("ean").length() < 8 || req.queryParams("storeId").length() < 1 || req.queryParams("id").length() < 33) {
+        if(req.queryParams("storeId").length() < 1) {
             return false;
         }
         if(req.queryParams().size() == 5 && req.queryParams("productName").length() > 150){
             return false;
         }
+        
+        if(!specialIdCheck(req)  || !specialEanCheck(req)) return false;
         
         // Cents value check.
         int cents = 0;
@@ -61,43 +53,13 @@ public class Validators {
             return false;
         }
         
-        // Id value check of the tokenAndId.
-        int id = 0;
-        try{ 
-            id = Integer.parseInt(req.queryParams("id").substring(32));
-        }catch(Exception e){
-            return false;
-        }
-        if(id < 1) {
-            return false;
-        }
-        
         return true;
     }
     
     static boolean IdNicknameOk(Request req){
-        if(req.queryParams().size() != 2) {
-            return false;
-        }
-        if(!req.queryParams().contains("id") || !req.queryParams().contains("nickname")) {
-            return false;
-        }
-        if(req.queryParamsValues("id").length != 1 || req.queryParamsValues("nickname").length != 1) {
-            return false;
-        }
+        if(!basicParameterChecks(req, "id", "nickname") || !specialIdCheck(req)) return false;
         
-        if(req.queryParams("id").length() < 33 || req.queryParams("nickname").length() < 2 || req.queryParams("nickname").length() > 20) {
-            return false;
-        }
-        
-        // Id value check of the tokenAndId.
-        int id = 0;
-        try{ 
-            id = Integer.parseInt(req.queryParams("id").substring(32));
-        }catch(Exception e){
-            return false;
-        }
-        if(id < 1) {
+        if(req.queryParams("nickname").length() < 2 || req.queryParams("nickname").length() > 20) {
             return false;
         }
         
@@ -105,30 +67,7 @@ public class Validators {
     }
     
     static boolean eanIdProductNameOk(Request req){
-        if(req.queryParams().size() != 3) {
-            return false;
-        }
-        
-        if(!req.queryParams().contains("ean") || !req.queryParams().contains("id") || !req.queryParams().contains("productName")) {
-            return false;
-        }
-        if(req.queryParamsValues("ean").length != 1 || req.queryParamsValues("id").length != 1 || req.queryParamsValues("productName").length != 1) {
-            return false;
-        }
-        if(req.queryParams("ean").length() < 8 || req.queryParams("id").length() < 33 || req.queryParams("productName").length() > 150 || req.queryParams("productName").length() < 2) {
-            return false;
-        }
-        
-        // Id value check of the tokenAndId.
-        int id = 0;
-        try{ 
-            id = Integer.parseInt(req.queryParams("id").substring(32));
-        }catch(Exception e){
-            return false;
-        }
-        if(id < 1) {
-            return false;
-        }
+        if(!basicParameterChecks(req, "ean", "id", "productName") || !specialIdCheck(req) || !specialEanCheck(req) || !specialProductNameCheck(req)) return false;
         
         return true;
     }
@@ -145,20 +84,7 @@ public class Validators {
             return false;
         }
         
-        if(req.queryParams("id").length() < 33) {
-            return false;
-        }
-        
-        // Id value check of the tokenAndId.
-        int id = 0;
-        try{ 
-            id = Integer.parseInt(req.queryParams("id").substring(32));
-        }catch(Exception e){
-            return false;
-        }
-        if(id < 1) {
-            return false;
-        }
+        if(!specialIdCheck(req)) return false;
         
         int i = 1;
         while(i < req.queryParams().size()) {
@@ -179,18 +105,29 @@ public class Validators {
     }
     
     static boolean IdEanOk(Request req){
-        if(req.queryParams().size() != 2) {
-            return false;
-        }
+        if(!basicParameterChecks(req, "id", "ean") || !specialIdCheck(req) || !specialEanCheck(req)) return false;
         
-        if(!req.queryParams().contains("id") || !req.queryParams().contains("ean")) {
+        return true;
+    }
+    
+    
+    private static boolean basicParameterChecks(Request req, String... parameters) {
+        if(req.queryParams().size() != parameters.length) {
             return false;
         }
-        if(req.queryParamsValues("id").length != 1 || req.queryParamsValues("ean").length != 1) {
-            return false;
+        for(String parameter : parameters) {
+            if(!req.queryParams().contains(parameter)) {
+                return false;
+            }
+            if(req.queryParamsValues(parameter).length != 1) {
+                return false;
+            }            
         }
-        
-        if(req.queryParams("id").length() < 33 || req.queryParams("ean").length() < 8) {
+        return true;
+    }
+    
+    private static boolean specialIdCheck(Request req) {
+        if(req.queryParams("id").length() < 33) {
             return false;
         }
         
@@ -202,6 +139,22 @@ public class Validators {
             return false;
         }
         if(id < 1) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private static boolean specialEanCheck(Request req) {
+        if(req.queryParams("ean").length() < 8) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private static boolean specialProductNameCheck(Request req) {
+        if(req.queryParams("productName").length() > 150 || req.queryParams("productName").length() < 2) {
             return false;
         }
         
