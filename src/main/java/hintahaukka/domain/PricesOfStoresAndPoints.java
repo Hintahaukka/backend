@@ -14,4 +14,16 @@ public class PricesOfStoresAndPoints {
         this.pricesOfStores = pricesOfStores;
     }
 
+    public int getPointsTotal() {
+        return pointsTotal;
+    }
+
+    public int getPointsUnused() {
+        return pointsUnused;
+    }
+
+    public ArrayList<PricesOfStore> getPricesOfStores() {
+        return pricesOfStores;
+    }
+
 }

@@ -107,7 +107,7 @@ public class HintahaukkaService {
         return new InfoAndPrices(product.getEan(), product.getName(), ptuList);
     }
     
-    public ArrayList<PricesOfStore> pricesOfGivenProductsInDifferentStores(String[] eans, String schemaName) {
+    public PricesOfStoresAndPoints pricesOfGivenProductsInDifferentStores(String[] eans, String tokenAndId, String schemaName) {
         HashMap<Integer, HashMap<String, PriceInStore>> stores = new HashMap<>();
         
         HashMap<String, Integer> averagePrices = new HashMap<>();
@@ -185,10 +185,16 @@ public class HintahaukkaService {
             else return 1;
         });
         
-        return storesResult;
+        // Price information query consumes user's points.
+        User user = this.consumePointsFromUser(tokenAndId, eans.length, schemaName);
+        if(user == null) return null;
+        
+        PricesOfStoresAndPoints resultWithPoints = new PricesOfStoresAndPoints(user.getPointsTotal(), user.getPointsUnused(), storesResult);
+        
+        return resultWithPoints;
     }
     
-    public ArrayList<PriceTransferUnit> priceOfGivenProductInDifferentStoresWithNoInfo(String ean, String schemaName) {
+    public PointsAndPrices priceOfGivenProductInDifferentStoresWithNoInfo(String ean, String tokenAndId, String schemaName) {
         Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
         if(product == null) return null;
         
@@ -210,7 +216,12 @@ public class HintahaukkaService {
             return null;
         }
         
-        return ptuList;
+        User user = this.consumePointsFromUser(tokenAndId, 1, schemaName);
+        if(user == null) return null;
+        
+        PointsAndPrices result = new PointsAndPrices(user.getPointsTotal(), user.getPointsUnused(), ptuList);
+        
+        return result;
     }
     
     /**
@@ -270,6 +281,38 @@ public class HintahaukkaService {
             userDao.updatePointsTotal(id, token, pointsTotal, schemaName);
             userDao.updatePointsUnused(id, token, pointsUnused, schemaName);
             return userDao.findOne(id, token, schemaName);
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
+    }
+    
+    /**
+     * Consumes points from the user if the user has sufficient amount of unused points.
+     * @param tokenAndId User id
+     * @param pointsConsumed Amount of unused points to be consumed from the user.
+     * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
+     * @return User object with updated points, or null if the user didn't have sufficient amount of unused points.
+     */
+    public User consumePointsFromUser(String tokenAndId, int pointsConsumed, String schemaName) {
+        int id = Integer.parseInt(tokenAndId.substring(32));
+        String token = tokenAndId.substring(0, 32);
+        
+        try {
+            User user = userDao.findOne(id, token, schemaName);
+            if (user == null) {
+                return null;
+            }
+            
+            if(user.getPointsUnused() < pointsConsumed) return null;
+            
+            user.setPointsUnused(user.getPointsUnused() - pointsConsumed);
+            
+            if(!userDao.updatePointsUnused(id, token, user.getPointsUnused(), schemaName)){
+                return null;
+            }
+            
+            return user;
         } catch(Exception e) {
             System.out.println(e.toString());
             return null;
