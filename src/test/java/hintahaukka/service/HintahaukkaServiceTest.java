@@ -251,4 +251,43 @@ public class HintahaukkaServiceTest {
         assertEquals(10, result.getPointsTotal());
         assertEquals(9, result.getPointsUnused());
     }
+    
+    @Test
+    public void StorePointsAreAddedToUserAndLeaderboardIsCorrect(){
+        // Add few users:
+        String tokenAndId1 = service.getNewId("test");
+        service.updateNickname(tokenAndId1, "user1", "test");
+        String tokenAndId2 = service.getNewId("test");
+        service.updateNickname(tokenAndId2, "user2", "test");
+        String tokenAndId3 = service.getNewId("test");
+        service.updateNickname(tokenAndId3, "user3", "test");
+        
+        String storeId = "1";
+        // Add a random price to the store so that the store is added to the database at the same time.
+        service.addThePriceOfGivenProductToDatabase("12345678", 100, storeId, "test");
+        
+        // Users get points:
+        
+        User user = service.addPointsToUser(tokenAndId1, 9, "test");
+        service.addStorePointsToUser(user, storeId, 9, "test");
+        
+        user = service.addPointsToUser(tokenAndId2, 9, "test");
+        service.addStorePointsToUser(user, storeId, 9, "test");
+        
+        user = service.addPointsToUser(tokenAndId3, 8, "test");
+        service.addStorePointsToUser(user, storeId, 8, "test");
+        
+        user = service.addPointsToUser(tokenAndId1, 1, "test");
+        service.addStorePointsToUser(user, storeId, 1, "test");
+        
+        // Leaderboard is correct:
+        ArrayList<NicknameAndStorePoints> leaderboard = service.getLeaderboardForStore(storeId, "test");
+        assertEquals(3, leaderboard.size());
+        assertEquals("user1", leaderboard.get(0).getNickname());
+        assertEquals("user2", leaderboard.get(1).getNickname());
+        assertEquals("user3", leaderboard.get(2).getNickname());
+        assertEquals(10, leaderboard.get(0).getPoints());
+        assertEquals(9, leaderboard.get(1).getPoints());
+        assertEquals(8, leaderboard.get(2).getPoints());
+    }
 }

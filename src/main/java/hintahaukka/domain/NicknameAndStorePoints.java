@@ -10,4 +10,12 @@ public class NicknameAndStorePoints {
         this.points = points;
     }
 
+    public String getNickname() {
+        return nickname;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
 }
