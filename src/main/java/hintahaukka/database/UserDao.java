@@ -26,6 +26,13 @@ public class UserDao {
         }, resultSet -> 
             new User(resultSet.getInt("id"), resultSet.getString("token"), resultSet.getString("nickname"), resultSet.getInt("pointsTotal"), resultSet.getInt("pointsUnused")));
     }
+    
+    public User findOne(int id, String schemaName) throws URISyntaxException, SQLException {
+        return (User) database.executeQueryAndExpectOneResult("SELECT * FROM " + schemaName + ".User WHERE id = ?", statement -> {
+            statement.setInt(1, id);   
+        }, resultSet -> 
+            new User(resultSet.getInt("id"), resultSet.getString("token"), resultSet.getString("nickname"), resultSet.getInt("pointsTotal"), resultSet.getInt("pointsUnused")));
+    }
 
     public Boolean updatePointsTotal(int id, String token, int newPointsTotal, String schemaName) throws URISyntaxException, SQLException {
         return (Boolean) database.executeQueryAndExpectOneResult("UPDATE " + schemaName + ".User SET pointsTotal = ? WHERE id = ? AND token = ? RETURNING id", statement -> {

@@ -110,6 +110,16 @@ public class Validators {
         return true;
     }
     
+    static boolean storeIdOk(Request req){
+        if(!basicParameterChecks(req, "storeId")) return false;
+        
+        if(req.queryParams("storeId").length() < 1) {
+            return false;
+        }
+        
+        return true;
+    }
+    
     
     private static boolean basicParameterChecks(Request req, String... parameters) {
         if(req.queryParams().size() != parameters.length) {

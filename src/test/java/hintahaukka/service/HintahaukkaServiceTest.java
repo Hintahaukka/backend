@@ -21,7 +21,8 @@ public class HintahaukkaServiceTest {
         ProductDao productDao = new ProductDao(database);
         StoreDao storeDao = new StoreDao(database);
         UserDao userDao = new UserDao(database);
-        service = new HintahaukkaService(priceDao, productDao, storeDao, userDao);
+        StorePointsDao storePointsDao = new StorePointsDao(database);
+        service = new HintahaukkaService(priceDao, productDao, storeDao, userDao, storePointsDao);
     }
 
     @Before

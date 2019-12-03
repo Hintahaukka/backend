@@ -8,6 +8,7 @@ import static spark.Spark.*;
 import spark.Request;
 import spark.Response;
 import com.google.gson.Gson;
+import java.util.ArrayList;
 
 public class App {
     
@@ -47,6 +48,10 @@ public class App {
             return getPricesForOneProductFromGivenSchema("public", req, res);
         });
         
+        post("/getLeaderboardForStore", (req, res) -> {
+            return getLeaderboardForStoreFromGivenSchema("public", req, res);
+        });
+        
         
         post("/test/getInfoAndPrices", (req, res) -> {
             return getInfoAndPricesFromGivenSchema("test", req, res);
@@ -74,6 +79,10 @@ public class App {
         
         post("/test/getPricesForOneProduct", (req, res) -> {
             return getPricesForOneProductFromGivenSchema("test", req, res);
+        });
+        
+        post("/test/getLeaderboardForStore", (req, res) -> {
+            return getLeaderboardForStoreFromGivenSchema("test", req, res);
         });
         
         
@@ -110,7 +119,8 @@ public class App {
         ProductDao productDao = new ProductDao(database);
         StoreDao storeDao = new StoreDao(database);
         UserDao userDao = new UserDao(database);
-        service = new HintahaukkaService(priceDao, productDao, storeDao, userDao);        
+        StorePointsDao storePointsDao = new StorePointsDao(database);
+        service = new HintahaukkaService(priceDao, productDao, storeDao, userDao, storePointsDao);        
     }
     
     static String getInfoAndPricesFromGivenSchema(String schemaName, Request req, Response res) {
@@ -270,6 +280,29 @@ public class App {
         }
         res.type("application/json");
         String ptuListAsJSON = new Gson().toJson(result);
+        return ptuListAsJSON;
+    }
+    
+    static String getLeaderboardForStoreFromGivenSchema(String schemaName, Request req, Response res) {
+        // Input validation:
+        if(!storeIdOk(req)) {
+            res.status(400);
+            return "Input error!";
+        }
+        
+        // Extract information from the HTTP POST request:
+        String storeId = req.queryParams("storeId");
+        
+        // Hintahaukka logic:
+        ArrayList<NicknameAndStorePoints> leaderboard = service.getLeaderboardForStore(storeId, schemaName);
+
+        // Build and send HTTP response:
+        if(leaderboard == null) {  // Error response.
+            res.status(500);
+            return "Server error!";
+        }
+        res.type("application/json");
+        String ptuListAsJSON = new Gson().toJson(leaderboard);
         return ptuListAsJSON;
     }
 
