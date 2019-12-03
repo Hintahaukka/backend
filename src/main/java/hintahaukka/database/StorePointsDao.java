@@ -15,6 +15,15 @@ public class StorePointsDao {
     public StorePointsDao(Database database) {
         this.database = database;
     }
+    
+    public Boolean add(User user, Store store, int points, String schemaName) throws URISyntaxException, SQLException {
+        return (Boolean) database.executeQueryAndExpectOneResult("INSERT INTO " + schemaName + ".StorePoints (user_id, store_id, points) VALUES (?, ?, ?) RETURNING id", statement -> {
+            statement.setInt(1, user.getId());
+            statement.setInt(2, store.getId());
+            statement.setInt(3, points);     
+        }, resultSet -> 
+            Boolean.TRUE);
+    }
 
     public ArrayList<StorePoints> find10LargestForStore(Store store, String schemaName) throws URISyntaxException, SQLException {
         Connection conn = this.database.getConnection();

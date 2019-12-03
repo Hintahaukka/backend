@@ -288,6 +288,23 @@ public class HintahaukkaService {
         }
     }
     
+    public void addStorePointsToUser(User user, String storeId, int newPoints, String schemaName) {
+        try {
+            Store store = storeDao.findOne(storeId, schemaName);
+            
+            StorePoints storePoints = storePointsDao.findOne(user, store, schemaName);
+            
+            if(storePoints == null) {
+                storePointsDao.add(user, store, newPoints, schemaName);
+            } else {
+                storePoints.setPoints(storePoints.getPoints() + newPoints);
+                storePointsDao.updatePoints(storePoints, schemaName);
+            }
+        } catch(Exception e) {
+            System.out.println(e.toString());
+        }
+    }
+    
     /**
      * Consumes points from the user if the user has sufficient amount of unused points.
      * @param tokenAndId User id

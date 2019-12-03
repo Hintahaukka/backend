@@ -164,6 +164,7 @@ public class App {
         Product product = service.addThePriceOfGivenProductToDatabase(ean, cents, storeId, schemaName);
         Price priceAfter = service.latestPrice(ean, storeId, schemaName);
         User user = service.addPointsToUser(tokenAndId, HintahaukkaService.countPoints(priceBefore, priceAfter), schemaName);
+        service.addStorePointsToUser(user, storeId, HintahaukkaService.countPoints(priceBefore, priceAfter), schemaName);
 
         // Build and send HTTP response:
         if(product == null || user == null) {  // Error response.
