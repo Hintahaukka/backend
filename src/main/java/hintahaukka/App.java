@@ -3,11 +3,11 @@ package hintahaukka;
 import hintahaukka.database.*;
 import hintahaukka.domain.*;
 import hintahaukka.service.*;
+import static hintahaukka.Validators.*;
 import static spark.Spark.*;
 import spark.Request;
 import spark.Response;
 import com.google.gson.Gson;
-import java.util.ArrayList;
 
 public class App {
     
@@ -228,24 +228,24 @@ public class App {
         }
         
         // Extract information from the HTTP POST request:
-        String[] eans = new String[req.queryParams().size()];
+        String tokenAndId = req.queryParams("id");
+        String[] eans = new String[req.queryParams().size() - 1];
         int i = 1;
-        while(i < req.queryParams().size()) {  // One of the queryParams is id, so the amount of eans is size() - 1.
-            eans[i] = req.queryParams("ean" + i);
+        while(i < req.queryParams().size()) {  
+            eans[i - 1] = req.queryParams("ean" + i);
             ++i;
         }
         
         // Hintahaukka logic:
-        ArrayList<PricesOfStore> storesResult = service.pricesOfGivenProductsInDifferentStores(eans, schemaName);
-        PricesOfStoresAndPoints resultWithPoints = new PricesOfStoresAndPoints(100, 50, storesResult);
+        PricesOfStoresAndPoints result = service.pricesOfGivenProductsInDifferentStores(eans, tokenAndId, schemaName);
 
         // Build and send HTTP response:
-        if(storesResult == null) {  // Error response.
+        if(result == null) {  // Error response.
             res.status(500);
             return "Server error!";
         }
         res.type("application/json");
-        String ptuListAsJSON = new Gson().toJson(resultWithPoints);
+        String ptuListAsJSON = new Gson().toJson(result);
         return ptuListAsJSON;
     }
     
@@ -257,14 +257,14 @@ public class App {
         }
         
         // Extract information from the HTTP POST request:
+        String tokenAndId = req.queryParams("id");
         String ean = req.queryParams("ean");
 
         // Hintahaukka logic:
-        ArrayList<PriceTransferUnit> ptuList = service.priceOfGivenProductInDifferentStoresWithNoInfo(ean, schemaName);
-        PointsAndPrices result = new PointsAndPrices(100, 50, ptuList);
+        PointsAndPrices result = service.priceOfGivenProductInDifferentStoresWithNoInfo(ean, tokenAndId, schemaName);
 
         // Build and send HTTP response:
-        if(ptuList == null) {  // Error response.
+        if(result == null) {  // Error response.
             res.status(500);
             return "Server error!";
         }
@@ -281,206 +281,4 @@ public class App {
         return 4567; //return default port if heroku-port isn't set (i.e. on localhost)
     }
     
-    
-    // Input validators:
-    
-    static boolean eanOk(Request req){
-        if(req.queryParams().size() != 1) {
-            return false;
-        }
-        if(!req.queryParams().contains("ean")) {
-            return false;
-        }
-        if(req.queryParamsValues("ean").length != 1) {
-            return false;
-        }
-        if(req.queryParams("ean").length() < 8) {
-            return false;
-        }
-        return true;
-    }
-    
-    static boolean eanCentsStoreIdIdOk(Request req){
-        if(req.queryParams().size() != 4 && req.queryParams().size() != 5) {
-            return false;
-        }
-        
-        if(!req.queryParams().contains("ean") || !req.queryParams().contains("cents") || !req.queryParams().contains("storeId") || !req.queryParams().contains("id")) {
-            return false;
-        }
-        if(req.queryParams().size() == 5 && !req.queryParams().contains("productName")){
-            return false;
-        }
-        
-        if(req.queryParamsValues("ean").length != 1 || req.queryParamsValues("cents").length != 1 || req.queryParamsValues("storeId").length != 1 || req.queryParamsValues("id").length != 1) {
-            return false;
-        }
-        if(req.queryParams().size() == 5 && req.queryParamsValues("productName").length != 1){
-            return false;
-        }
-        
-        if(req.queryParams("ean").length() < 8 || req.queryParams("storeId").length() < 1 || req.queryParams("id").length() < 33) {
-            return false;
-        }
-        if(req.queryParams().size() == 5 && req.queryParams("productName").length() > 150){
-            return false;
-        }
-        
-        // Cents value check.
-        int cents = 0;
-        try{
-            cents = Integer.parseInt(req.queryParams("cents"));
-        }catch(Exception e){
-            return false;
-        }
-        if(cents < 0) {
-            return false;
-        }
-        
-        // Id value check of the tokenAndId.
-        int id = 0;
-        try{ 
-            id = Integer.parseInt(req.queryParams("id").substring(32));
-        }catch(Exception e){
-            return false;
-        }
-        if(id < 1) {
-            return false;
-        }
-        
-        return true;
-    }
-    
-    static boolean IdNicknameOk(Request req){
-        if(req.queryParams().size() != 2) {
-            return false;
-        }
-        if(!req.queryParams().contains("id") || !req.queryParams().contains("nickname")) {
-            return false;
-        }
-        if(req.queryParamsValues("id").length != 1 || req.queryParamsValues("nickname").length != 1) {
-            return false;
-        }
-        
-        if(req.queryParams("id").length() < 33 || req.queryParams("nickname").length() < 2 || req.queryParams("nickname").length() > 20) {
-            return false;
-        }
-        
-        // Id value check of the tokenAndId.
-        int id = 0;
-        try{ 
-            id = Integer.parseInt(req.queryParams("id").substring(32));
-        }catch(Exception e){
-            return false;
-        }
-        if(id < 1) {
-            return false;
-        }
-        
-        return true;
-    }
-    
-    static boolean eanIdProductNameOk(Request req){
-        if(req.queryParams().size() != 3) {
-            return false;
-        }
-        
-        if(!req.queryParams().contains("ean") || !req.queryParams().contains("id") || !req.queryParams().contains("productName")) {
-            return false;
-        }
-        if(req.queryParamsValues("ean").length != 1 || req.queryParamsValues("id").length != 1 || req.queryParamsValues("productName").length != 1) {
-            return false;
-        }
-        if(req.queryParams("ean").length() < 8 || req.queryParams("id").length() < 33 || req.queryParams("productName").length() > 150 || req.queryParams("productName").length() < 2) {
-            return false;
-        }
-        
-        // Id value check of the tokenAndId.
-        int id = 0;
-        try{ 
-            id = Integer.parseInt(req.queryParams("id").substring(32));
-        }catch(Exception e){
-            return false;
-        }
-        if(id < 1) {
-            return false;
-        }
-        
-        return true;
-    }
-    
-    static boolean IdEansOk(Request req){
-        if(req.queryParams().size() < 2) {
-            return false;
-        }
-        
-        if(!req.queryParams().contains("id")) {
-            return false;
-        }
-        if(req.queryParamsValues("id").length != 1) {
-            return false;
-        }
-        
-        if(req.queryParams("id").length() < 33) {
-            return false;
-        }
-        
-        // Id value check of the tokenAndId.
-        int id = 0;
-        try{ 
-            id = Integer.parseInt(req.queryParams("id").substring(32));
-        }catch(Exception e){
-            return false;
-        }
-        if(id < 1) {
-            return false;
-        }
-        
-        int i = 1;
-        while(i < req.queryParams().size()) {
-            if(!req.queryParams().contains("ean" + i)) {
-                return false;
-            }
-            if(req.queryParamsValues("ean" + i).length != 1) {
-                return false;
-            }
-            if(req.queryParams("ean" + i).length() < 8) {
-                return false;
-            }            
-            
-            ++i;
-        }
-        
-        return true;
-    }
-    
-    static boolean IdEanOk(Request req){
-        if(req.queryParams().size() != 2) {
-            return false;
-        }
-        
-        if(!req.queryParams().contains("id") || !req.queryParams().contains("ean")) {
-            return false;
-        }
-        if(req.queryParamsValues("id").length != 1 || req.queryParamsValues("ean").length != 1) {
-            return false;
-        }
-        
-        if(req.queryParams("id").length() < 33 || req.queryParams("ean").length() < 8) {
-            return false;
-        }
-        
-        // Id value check of the tokenAndId.
-        int id = 0;
-        try{ 
-            id = Integer.parseInt(req.queryParams("id").substring(32));
-        }catch(Exception e){
-            return false;
-        }
-        if(id < 1) {
-            return false;
-        }
-        
-        return true;
-    }
 }

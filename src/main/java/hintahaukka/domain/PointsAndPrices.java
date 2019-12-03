@@ -13,7 +13,17 @@ public class PointsAndPrices {
         this.pointsUnused = pointsUnused;
         this.prices = prices;
     }
-    
-    
+
+    public int getPointsTotal() {
+        return pointsTotal;
+    }
+
+    public int getPointsUnused() {
+        return pointsUnused;
+    }
+
+    public ArrayList<PriceTransferUnit> getPrices() {
+        return prices;
+    }
 
 }
