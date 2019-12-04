@@ -289,7 +289,7 @@ public class App {
         String storeId = req.queryParams("storeId");
         
         // Hintahaukka logic:
-        ArrayList<NicknameAndStorePoints> leaderboard = service.getLeaderboardForStore(storeId, schemaName);
+        ArrayList<NicknameAndPoints> leaderboard = service.getLeaderboardForStore(storeId, schemaName);
 
         // Build and send HTTP response:
         if(leaderboard == null) {  // Error response.

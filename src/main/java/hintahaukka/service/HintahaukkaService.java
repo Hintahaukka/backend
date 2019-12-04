@@ -415,8 +415,8 @@ public class HintahaukkaService {
         return success;
     }
     
-    public ArrayList<NicknameAndStorePoints> getLeaderboardForStore(String storeId, String schemaName) {
-        ArrayList<NicknameAndStorePoints> leaderboard = new ArrayList<>();
+    public ArrayList<NicknameAndPoints> getLeaderboardForStore(String storeId, String schemaName) {
+        ArrayList<NicknameAndPoints> leaderboard = new ArrayList<>();
         
         try{
             Store store = storeDao.findOne(storeId, schemaName);
@@ -428,7 +428,7 @@ public class HintahaukkaService {
                 User user = userDao.findOne(storePoints.getUserId(), schemaName);
                 if(user == null) return null;
                 
-                leaderboard.add(new NicknameAndStorePoints(user.getNickname(), storePoints.getPoints()));
+                leaderboard.add(new NicknameAndPoints(user.getNickname(), storePoints.getPoints()));
             }
             
         } catch(Exception e) {

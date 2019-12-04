@@ -281,7 +281,7 @@ public class HintahaukkaServiceTest {
         service.addStorePointsToUser(user, storeId, 1, "test");
         
         // Leaderboard is correct:
-        ArrayList<NicknameAndStorePoints> leaderboard = service.getLeaderboardForStore(storeId, "test");
+        ArrayList<NicknameAndPoints> leaderboard = service.getLeaderboardForStore(storeId, "test");
         assertEquals(3, leaderboard.size());
         assertEquals("user1", leaderboard.get(0).getNickname());
         assertEquals("user2", leaderboard.get(1).getNickname());
