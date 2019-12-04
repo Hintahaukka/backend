@@ -27,7 +27,7 @@ public class StorePointsDao {
 
     public ArrayList<StorePoints> find10LargestForStore(Store store, String schemaName) throws URISyntaxException, SQLException {
         Connection conn = this.database.getConnection();
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schemaName + ".StorePoints WHERE store_id = ? ORDER BY points DESC");
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schemaName + ".StorePoints WHERE store_id = ? ORDER BY points DESC LIMIT 10");
         stmt.setInt(1, store.getId());
 
         ResultSet rs = stmt.executeQuery();
