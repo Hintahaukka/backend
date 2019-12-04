@@ -30,6 +30,13 @@ public class UserDao {
         }, resultSet -> 
             new User(resultSet.getInt("id"), resultSet.getString("token"), resultSet.getString("nickname"), resultSet.getInt("pointsTotal"), resultSet.getInt("pointsUnused")));
     }
+  
+    public User findOne(int id, String schemaName) throws URISyntaxException, SQLException {
+        return (User) database.executeQueryAndExpectOneResult("SELECT * FROM " + schemaName + ".User WHERE id = ?", statement -> {
+            statement.setInt(1, id);   
+        }, resultSet -> 
+            new User(resultSet.getInt("id"), resultSet.getString("token"), resultSet.getString("nickname"), resultSet.getInt("pointsTotal"), resultSet.getInt("pointsUnused")));
+    }
     
     public ArrayList<User> find10withMostPoints(String schemaName) throws URISyntaxException, SQLException {
         Connection conn = this.database.getConnection();

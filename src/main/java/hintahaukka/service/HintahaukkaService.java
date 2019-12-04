@@ -1,11 +1,5 @@
 package hintahaukka.service;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import org.apache.commons.lang3.RandomStringUtils;
-
 import hintahaukka.domain.*;
 import hintahaukka.database.*;
 
@@ -26,6 +20,11 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class HintahaukkaService {
     
@@ -33,12 +32,14 @@ public class HintahaukkaService {
     private ProductDao productDao;
     private StoreDao storeDao;
     private UserDao userDao;
+    private StorePointsDao storePointsDao;
 
-    public HintahaukkaService(PriceDao priceDao, ProductDao productDao, StoreDao storeDao, UserDao userDao) {
+    public HintahaukkaService(PriceDao priceDao, ProductDao productDao, StoreDao storeDao, UserDao userDao, StorePointsDao storePointsDao) {
         this.priceDao = priceDao;
         this.productDao = productDao;
         this.storeDao = storeDao;
         this.userDao = userDao;
+        this.storePointsDao = storePointsDao;
     }    
     
     /**
@@ -287,6 +288,23 @@ public class HintahaukkaService {
         }
     }
     
+    public void addStorePointsToUser(User user, String storeId, int newPoints, String schemaName) {
+        try {
+            Store store = storeDao.findOne(storeId, schemaName);
+            
+            StorePoints storePoints = storePointsDao.findOne(user, store, schemaName);
+            
+            if(storePoints == null) {
+                storePointsDao.add(user, store, newPoints, schemaName);
+            } else {
+                storePoints.setPoints(storePoints.getPoints() + newPoints);
+                storePointsDao.updatePoints(storePoints, schemaName);
+            }
+        } catch(Exception e) {
+            System.out.println(e.toString());
+        }
+    }
+    
     /**
      * Consumes points from the user if the user has sufficient amount of unused points.
      * @param tokenAndId User id
@@ -414,6 +432,30 @@ public class HintahaukkaService {
         }
         
         return success;
+    }
+    
+    public ArrayList<NicknameAndPoints> getLeaderboardForStore(String storeId, String schemaName) {
+        ArrayList<NicknameAndPoints> leaderboard = new ArrayList<>();
+        
+        try{
+            Store store = storeDao.findOne(storeId, schemaName);
+            if(store == null) return null;
+            
+            ArrayList<StorePoints> storePointsOfStore = storePointsDao.find10LargestForStore(store, schemaName);
+            
+            for(StorePoints storePoints : storePointsOfStore) {
+                User user = userDao.findOne(storePoints.getUserId(), schemaName);
+                if(user == null) return null;
+                
+                leaderboard.add(new NicknameAndPoints(user.getNickname(), storePoints.getPoints()));
+            }
+            
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
+        
+        return leaderboard;
     }
         
     Product getProductFromDbAddProductToDbIfNecessary(String ean, String schemaName) {

@@ -1,7 +1,7 @@
 package hintahaukka.domain;
 
 public class NicknameAndPoints {
-
+  
     private String nickname;
     private int points;
 

@@ -9,6 +9,7 @@ import static spark.Spark.*;
 import spark.Request;
 import spark.Response;
 import com.google.gson.Gson;
+import java.util.ArrayList;
 
 public class App {
     
@@ -47,7 +48,11 @@ public class App {
         post("/getPricesForOneProduct", (req, res) -> {
             return getPricesForOneProductFromGivenSchema("public", req, res);
         });
-        
+      
+        post("/getLeaderboardForStore", (req, res) -> {
+            return getLeaderboardForStoreFromGivenSchema("public", req, res);
+        });
+      
         get("/getLeaderboard", (req, res) -> {
             return getLeaderboardFromGivenSchema("public", req, res);
         });
@@ -81,6 +86,10 @@ public class App {
             return getPricesForOneProductFromGivenSchema("test", req, res);
         });
         
+        post("/test/getLeaderboardForStore", (req, res) -> {
+            return getLeaderboardForStoreFromGivenSchema("test", req, res);
+        });
+      
         get("/test/getLeaderboard", (req, res) -> {
             return getLeaderboardFromGivenSchema("test", req, res);
         });
@@ -109,17 +118,12 @@ public class App {
     static void serviceInitialization() {
         // Service initialization:
         database = new Database();
-        try{
-            database.initializeDatabaseIfUninitialized("public");
-            database.initializeDatabaseIfUninitialized("test");
-        } catch(Exception e) {
-            System.out.println(e.toString());
-        }
         PriceDao priceDao = new PriceDao(database);
         ProductDao productDao = new ProductDao(database);
         StoreDao storeDao = new StoreDao(database);
         UserDao userDao = new UserDao(database);
-        service = new HintahaukkaService(priceDao, productDao, storeDao, userDao);        
+        StorePointsDao storePointsDao = new StorePointsDao(database);
+        service = new HintahaukkaService(priceDao, productDao, storeDao, userDao, storePointsDao);        
     }
     
     static String getInfoAndPricesFromGivenSchema(String schemaName, Request req, Response res) {
@@ -163,6 +167,7 @@ public class App {
         Product product = service.addThePriceOfGivenProductToDatabase(ean, cents, storeId, schemaName);
         Price priceAfter = service.latestPrice(ean, storeId, schemaName);
         User user = service.addPointsToUser(tokenAndId, HintahaukkaService.countPoints(priceBefore, priceAfter), schemaName);
+        service.addStorePointsToUser(user, storeId, HintahaukkaService.countPoints(priceBefore, priceAfter), schemaName);
 
         // Build and send HTTP response:
         if(product == null || user == null) {  // Error response.
@@ -282,6 +287,29 @@ public class App {
         return ptuListAsJSON;
     }
     
+    static String getLeaderboardForStoreFromGivenSchema(String schemaName, Request req, Response res) {
+        // Input validation:
+        if(!storeIdOk(req)) {
+            res.status(400);
+            return "Input error!";
+        }
+        
+        // Extract information from the HTTP POST request:
+        String storeId = req.queryParams("storeId");
+        
+        // Hintahaukka logic:
+        ArrayList<NicknameAndPoints> leaderboard = service.getLeaderboardForStore(storeId, schemaName);
+
+        // Build and send HTTP response:
+        if(leaderboard == null) {  // Error response.
+            res.status(500);
+            return "Server error!";
+        }
+        res.type("application/json");
+        String ptuListAsJSON = new Gson().toJson(leaderboard);
+        return ptuListAsJSON;
+    }
+  
     static String getLeaderboardFromGivenSchema(String schemaName, Request req, Response res) {
         // Hintahaukka logic:
         ArrayList<NicknameAndPoints> result = service.getLeaderboard(schemaName);
