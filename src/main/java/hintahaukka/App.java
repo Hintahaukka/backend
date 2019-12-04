@@ -109,12 +109,6 @@ public class App {
     static void serviceInitialization() {
         // Service initialization:
         database = new Database();
-        try{
-            database.initializeDatabaseIfUninitialized("public");
-            database.initializeDatabaseIfUninitialized("test");
-        } catch(Exception e) {
-            System.out.println(e.toString());
-        }
         PriceDao priceDao = new PriceDao(database);
         ProductDao productDao = new ProductDao(database);
         StoreDao storeDao = new StoreDao(database);
