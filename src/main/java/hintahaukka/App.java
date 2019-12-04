@@ -3,6 +3,7 @@ package hintahaukka;
 import hintahaukka.database.*;
 import hintahaukka.domain.*;
 import hintahaukka.service.*;
+import java.util.ArrayList;
 import static hintahaukka.Validators.*;
 import static spark.Spark.*;
 import spark.Request;
@@ -47,6 +48,10 @@ public class App {
             return getPricesForOneProductFromGivenSchema("public", req, res);
         });
         
+        get("/getLeaderboard", (req, res) -> {
+            return getLeaderboardFromGivenSchema("public", req, res);
+        });
+        
         
         post("/test/getInfoAndPrices", (req, res) -> {
             return getInfoAndPricesFromGivenSchema("test", req, res);
@@ -74,6 +79,10 @@ public class App {
         
         post("/test/getPricesForOneProduct", (req, res) -> {
             return getPricesForOneProductFromGivenSchema("test", req, res);
+        });
+        
+        get("/test/getLeaderboard", (req, res) -> {
+            return getLeaderboardFromGivenSchema("test", req, res);
         });
         
         
@@ -262,6 +271,20 @@ public class App {
 
         // Hintahaukka logic:
         PointsAndPrices result = service.priceOfGivenProductInDifferentStoresWithNoInfo(ean, tokenAndId, schemaName);
+
+        // Build and send HTTP response:
+        if(result == null) {  // Error response.
+            res.status(500);
+            return "Server error!";
+        }
+        res.type("application/json");
+        String ptuListAsJSON = new Gson().toJson(result);
+        return ptuListAsJSON;
+    }
+    
+    static String getLeaderboardFromGivenSchema(String schemaName, Request req, Response res) {
+        // Hintahaukka logic:
+        ArrayList<NicknameAndPoints> result = service.getLeaderboard(schemaName);
 
         // Build and send HTTP response:
         if(result == null) {  // Error response.

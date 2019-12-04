@@ -250,4 +250,29 @@ public class HintahaukkaServiceTest {
         assertEquals(10, result.getPointsTotal());
         assertEquals(9, result.getPointsUnused());
     }
+    
+    @Test
+    public void globalLeaderboardIsCorrect(){
+        // Add few users:
+        String tokenAndId1 = service.getNewId("test");
+        service.updateNickname(tokenAndId1, "user1", "test");
+        String tokenAndId2 = service.getNewId("test");
+        service.updateNickname(tokenAndId2, "user2", "test");
+        String tokenAndId3 = service.getNewId("test");
+        service.updateNickname(tokenAndId3, "user3", "test");
+
+        service.addPointsToUser(tokenAndId1, 100, "test");
+        service.addPointsToUser(tokenAndId2, 20, "test");
+        service.addPointsToUser(tokenAndId3, 3, "test");
+
+        // Leaderboard is correct:
+        ArrayList<NicknameAndPoints> leaderboard = service.getLeaderboard("test");
+        assertEquals(3, leaderboard.size());
+        assertEquals("user1", leaderboard.get(0).getNickname());
+        assertEquals("user2", leaderboard.get(1).getNickname());
+        assertEquals("user3", leaderboard.get(2).getNickname());
+        assertEquals(100, leaderboard.get(0).getPoints());
+        assertEquals(20, leaderboard.get(1).getPoints());
+        assertEquals(3, leaderboard.get(2).getPoints());
+    }
 }

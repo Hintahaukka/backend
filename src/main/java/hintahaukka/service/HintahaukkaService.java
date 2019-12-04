@@ -319,6 +319,25 @@ public class HintahaukkaService {
         }
     }
     
+    public ArrayList<NicknameAndPoints> getLeaderboard(String schemaName) {
+        ArrayList<User> leaderboardOfUsers = new ArrayList<>();
+        
+        try {
+            leaderboardOfUsers = userDao.find10withMostPoints(schemaName);
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
+        
+        ArrayList<NicknameAndPoints> leaderboard = new ArrayList<>();
+        
+        for(User user : leaderboardOfUsers) {
+            leaderboard.add(new NicknameAndPoints(user.getNickname(), user.getPointsTotal()));
+        }
+        
+        return leaderboard;
+    }
+    
     /**
      * Counts points based on how far apart the timestamps of two price objects are.
      * @param before The old price
