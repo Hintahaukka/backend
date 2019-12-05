@@ -125,6 +125,14 @@ public class Database {
                 + "nickname TEXT, "
                 + "pointsTotal INTEGER DEFAULT 0, "
                 + "pointsUnused INTEGER DEFAULT 0)"
+                ,
+            "CREATE TABLE " + schemaName + ".StorePoints ("
+                + "id SERIAL PRIMARY KEY, "
+                + "user_id INTEGER NOT NULL, "
+                + "store_id INTEGER NOT NULL, "
+                + "points INTEGER DEFAULT 0, "
+                + "FOREIGN KEY(user_id) REFERENCES " + schemaName + ".User (id), "
+                + "FOREIGN KEY(store_id) REFERENCES " + schemaName + ".Store (id))"
         };
     }
 

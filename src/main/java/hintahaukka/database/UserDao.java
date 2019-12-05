@@ -1,6 +1,10 @@
 package hintahaukka.database;
 
 import hintahaukka.domain.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.sql.SQLException;
 import java.net.URISyntaxException;
 
@@ -25,6 +29,32 @@ public class UserDao {
             statement.setString(2, token);     
         }, resultSet -> 
             new User(resultSet.getInt("id"), resultSet.getString("token"), resultSet.getString("nickname"), resultSet.getInt("pointsTotal"), resultSet.getInt("pointsUnused")));
+    }
+  
+    public User findOne(int id, String schemaName) throws URISyntaxException, SQLException {
+        return (User) database.executeQueryAndExpectOneResult("SELECT * FROM " + schemaName + ".User WHERE id = ?", statement -> {
+            statement.setInt(1, id);   
+        }, resultSet -> 
+            new User(resultSet.getInt("id"), resultSet.getString("token"), resultSet.getString("nickname"), resultSet.getInt("pointsTotal"), resultSet.getInt("pointsUnused")));
+    }
+    
+    public ArrayList<User> find10withMostPoints(String schemaName) throws URISyntaxException, SQLException {
+        Connection conn = this.database.getConnection();
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schemaName + ".User ORDER BY pointsTotal DESC LIMIT 10");
+
+        ResultSet resultSet = stmt.executeQuery();
+
+        ArrayList<User> users = new ArrayList<>();
+        while (resultSet.next()) {
+            User user = new User(resultSet.getInt("id"), resultSet.getString("token"), resultSet.getString("nickname"), resultSet.getInt("pointsTotal"), resultSet.getInt("pointsUnused"));
+            users.add(user);
+        }
+
+        resultSet.close();
+        stmt.close();
+        conn.close();
+
+        return users;
     }
 
     public Boolean updatePointsTotal(int id, String token, int newPointsTotal, String schemaName) throws URISyntaxException, SQLException {
