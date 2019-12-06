@@ -1,5 +1,11 @@
 package hintahaukka.service;
 
+import hintahaukka.domain.bundles.InfoAndPrices;
+import hintahaukka.domain.bundles.NicknameAndPoints;
+import hintahaukka.domain.bundles.PointsAndPrices;
+import hintahaukka.domain.bundles.PriceTransferUnit;
+import hintahaukka.domain.bundles.PricesOfStore;
+import hintahaukka.domain.bundles.PricesOfStoresAndPoints;
 import hintahaukka.database.*;
 import hintahaukka.domain.*;
 import java.util.ArrayList;
@@ -39,10 +45,11 @@ public class HintahaukkaServiceTest {
     public void return3pricesForProductFromDifferentStores() {
         InfoAndPrices ptuList = null;
         try {
-            Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "test");
-            Product product2 = service.addThePriceOfGivenProductToDatabase("1", 120, "2", "test");
-            Product product3 = service.addThePriceOfGivenProductToDatabase("1", 130, "3", "test");
-            ptuList = service.priceOfGivenProductInDifferentStores(product3.getEan(), "test");
+            String tokenAndId = service.getNewId("test");
+            service.addThePriceOfGivenProductToDatabase("1", 110, "1", tokenAndId, "test");
+            service.addThePriceOfGivenProductToDatabase("1", 120, "2", tokenAndId, "test");
+            service.addThePriceOfGivenProductToDatabase("1", 130, "3", tokenAndId, "test");
+            ptuList = service.priceOfGivenProductInDifferentStores("1", "test");
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -54,10 +61,11 @@ public class HintahaukkaServiceTest {
     public void returnPricesOnlyForProductQueried() {
         InfoAndPrices ptuList = null;
         try {
-            Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "test");
-            Product product2 = service.addThePriceOfGivenProductToDatabase("1", 120, "2", "test");
-            Product product3 = service.addThePriceOfGivenProductToDatabase("2", 130, "3", "test");
-            ptuList = service.priceOfGivenProductInDifferentStores(product2.getEan(), "test");
+            String tokenAndId = service.getNewId("test");
+            service.addThePriceOfGivenProductToDatabase("1", 110, "1", tokenAndId, "test");
+            service.addThePriceOfGivenProductToDatabase("1", 120, "2", tokenAndId, "test");
+            service.addThePriceOfGivenProductToDatabase("2", 130, "3", tokenAndId, "test");
+            ptuList = service.priceOfGivenProductInDifferentStores("1", "test");
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -69,9 +77,10 @@ public class HintahaukkaServiceTest {
     public void returnOnlyLatestPriceForProduct() {
         InfoAndPrices ptuList = null;
         try {
-            Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "test");
-            Product product2 = service.addThePriceOfGivenProductToDatabase("1", 99, "1", "test");
-            ptuList = service.priceOfGivenProductInDifferentStores(product2.getEan(), "test");
+            String tokenAndId = service.getNewId("test");
+            service.addThePriceOfGivenProductToDatabase("1", 110, "1", tokenAndId, "test");
+            service.addThePriceOfGivenProductToDatabase("1", 99, "1", tokenAndId, "test");
+            ptuList = service.priceOfGivenProductInDifferentStores("1", "test");
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -102,22 +111,16 @@ public class HintahaukkaServiceTest {
     @Test
     public void noPointsAreAddedToUserIfPriceForTheSameProductInTheSameStoreWasAlreadyAddedToday() {
         String tokenAndId = service.getNewId("test");
-        Product oldProduct = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "test");
-        Price priceBefore = service.latestPrice("1", "1", "test");
-        Product product2 = service.addThePriceOfGivenProductToDatabase("1", 120, "2", "test");
-        Price priceAfter = service.latestPrice("1", "1", "test");
-        User user = service.addPointsToUser(tokenAndId, HintahaukkaService.countPoints(priceBefore, priceAfter), "test");
-        assertTrue(user.getPointsTotal() == 0);
-        assertTrue(user.getPointsUnused() == 0);
+        User first = service.addThePriceOfGivenProductToDatabase("1", 110, "1", tokenAndId, "test");
+        User second = service.addThePriceOfGivenProductToDatabase("1", 120, "1", tokenAndId, "test");
+        assertTrue(first.getPointsTotal() == second.getPointsTotal());
+        assertTrue(first.getPointsUnused() == second.getPointsUnused());
     }
 
     @Test
     public void pointsAreAddedToUserIfPriceForTheSameProductInTheSameStoreWasNeverAddedBefore() {
         String tokenAndId = service.getNewId("test");
-        Price priceBefore = service.latestPrice("1", "1", "test");
-        Product product1 = service.addThePriceOfGivenProductToDatabase("1", 110, "1", "test");
-        Price priceAfter = service.latestPrice("1", "1", "test");
-        User user = service.addPointsToUser(tokenAndId, HintahaukkaService.countPoints(priceBefore, priceAfter), "test");
+        User user = service.addThePriceOfGivenProductToDatabase("1", 110, "1", tokenAndId, "test");
         assertFalse(user.getPointsTotal() == 0);
         assertFalse(user.getPointsUnused() == 0);
     }
@@ -141,16 +144,16 @@ public class HintahaukkaServiceTest {
     @Test
     public void productNameIsUpdatedAndPointsAreGiven() {
         String tokenAndId = service.getNewId("test");
-        service.addThePriceOfGivenProductToDatabase("1", 100, "1", "test");
+        User before = service.addThePriceOfGivenProductToDatabase("1", 100, "1", tokenAndId, "test");
         
         service.updateProductNameAndAddPoints("1", tokenAndId, "Fazer Sininen", "test");
         
         String productName = service.getProductFromDbAddProductToDbIfNecessary("1", "test").getName();
         assertEquals("Fazer Sininen", productName);
         
-        User user = service.addPointsToUser(tokenAndId, 0, "test");
-        assertTrue(user.getPointsTotal() == 5);
-        assertTrue(user.getPointsUnused() == 5);
+        User after = service.addPointsToUser(tokenAndId, 0, "test");
+        assertTrue(after.getPointsTotal() - before.getPointsTotal() == 5);
+        assertTrue(after.getPointsUnused() - before.getPointsUnused() == 5);
     }
     
     @Test
@@ -161,10 +164,11 @@ public class HintahaukkaServiceTest {
         PricesOfStoresAndPoints result = null;
         ArrayList<PricesOfStore> storesResult = null;
         try {
-            service.addThePriceOfGivenProductToDatabase("1", 100, "1", "test");
-            service.addThePriceOfGivenProductToDatabase("2", 200, "1", "test");
-            service.addThePriceOfGivenProductToDatabase("2", 300, "2", "test");
-            service.addThePriceOfGivenProductToDatabase("3", 300, "2", "test");
+            String tokenAndIdOfAdder = service.getNewId("test");
+            service.addThePriceOfGivenProductToDatabase("1", 100, "1", tokenAndIdOfAdder, "test");
+            service.addThePriceOfGivenProductToDatabase("2", 200, "1", tokenAndIdOfAdder, "test");
+            service.addThePriceOfGivenProductToDatabase("2", 300, "2", tokenAndIdOfAdder, "test");
+            service.addThePriceOfGivenProductToDatabase("3", 300, "2", tokenAndIdOfAdder, "test");
             result = service.pricesOfGivenProductsInDifferentStores(new String[]{"1","2","3","4"}, tokenAndId, "test");
             storesResult = result.getPricesOfStores();
         } catch (Exception e) {
@@ -215,10 +219,11 @@ public class HintahaukkaServiceTest {
         
         PricesOfStoresAndPoints result = null;
         try {
-            service.addThePriceOfGivenProductToDatabase("1", 100, "1", "test");
-            service.addThePriceOfGivenProductToDatabase("2", 200, "1", "test");
-            service.addThePriceOfGivenProductToDatabase("2", 300, "2", "test");
-            service.addThePriceOfGivenProductToDatabase("3", 300, "2", "test");
+            String tokenAndIdOfAdder = service.getNewId("test");
+            service.addThePriceOfGivenProductToDatabase("1", 100, "1", tokenAndIdOfAdder, "test");
+            service.addThePriceOfGivenProductToDatabase("2", 200, "1", tokenAndIdOfAdder, "test");
+            service.addThePriceOfGivenProductToDatabase("2", 300, "2", tokenAndIdOfAdder, "test");
+            service.addThePriceOfGivenProductToDatabase("3", 300, "2", tokenAndIdOfAdder, "test");
             result = service.pricesOfGivenProductsInDifferentStores(new String[]{"1","2","3","4"}, tokenAndId, "test");
         } catch (Exception e) {
             fail(e.getMessage());
@@ -235,10 +240,11 @@ public class HintahaukkaServiceTest {
         PointsAndPrices result = null;
         ArrayList<PriceTransferUnit> prices = null;
         try {
-            service.addThePriceOfGivenProductToDatabase("1", 100, "1", "test");
-            service.addThePriceOfGivenProductToDatabase("2", 200, "1", "test");
-            service.addThePriceOfGivenProductToDatabase("2", 300, "2", "test");
-            service.addThePriceOfGivenProductToDatabase("3", 300, "2", "test");
+            String tokenAndIdOfAdder = service.getNewId("test");
+            service.addThePriceOfGivenProductToDatabase("1", 100, "1", tokenAndIdOfAdder, "test");
+            service.addThePriceOfGivenProductToDatabase("2", 200, "1", tokenAndIdOfAdder, "test");
+            service.addThePriceOfGivenProductToDatabase("2", 300, "2", tokenAndIdOfAdder, "test");
+            service.addThePriceOfGivenProductToDatabase("3", 300, "2", tokenAndIdOfAdder, "test");
             result = service.priceOfGivenProductInDifferentStoresWithNoInfo("2", tokenAndId, "test");
             prices = result.getPrices();
         } catch (Exception e) {
@@ -264,7 +270,7 @@ public class HintahaukkaServiceTest {
         
         String storeId = "1";
         // Add a random price to the store so that the store is added to the database at the same time.
-        service.addThePriceOfGivenProductToDatabase("12345678", 100, storeId, "test");
+        service.addThePriceOfGivenProductToDatabase("12345678", 100, storeId, tokenAndId1, "test");
         
         // Users get points:
         
@@ -286,7 +292,7 @@ public class HintahaukkaServiceTest {
         assertEquals("user1", leaderboard.get(0).getNickname());
         assertEquals("user2", leaderboard.get(1).getNickname());
         assertEquals("user3", leaderboard.get(2).getNickname());
-        assertEquals(10, leaderboard.get(0).getPoints());
+        assertEquals(20, leaderboard.get(0).getPoints());
         assertEquals(9, leaderboard.get(1).getPoints());
         assertEquals(8, leaderboard.get(2).getPoints());
     }

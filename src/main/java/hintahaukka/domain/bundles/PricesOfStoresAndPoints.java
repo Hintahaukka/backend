@@ -1,4 +1,4 @@
-package hintahaukka.domain;
+package hintahaukka.domain.bundles;
 
 import java.util.ArrayList;
 

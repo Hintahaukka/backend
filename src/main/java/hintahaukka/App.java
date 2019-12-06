@@ -1,5 +1,9 @@
 package hintahaukka;
 
+import hintahaukka.domain.bundles.NicknameAndPoints;
+import hintahaukka.domain.bundles.PointsAndPrices;
+import hintahaukka.domain.bundles.InfoAndPrices;
+import hintahaukka.domain.bundles.PricesOfStoresAndPoints;
 import hintahaukka.database.*;
 import hintahaukka.domain.*;
 import hintahaukka.service.*;
@@ -163,14 +167,10 @@ public class App {
         String tokenAndId = req.queryParams("id");
         
         // Hintahaukka logic:
-        Price priceBefore = service.latestPrice(ean, storeId, schemaName);
-        Product product = service.addThePriceOfGivenProductToDatabase(ean, cents, storeId, schemaName);
-        Price priceAfter = service.latestPrice(ean, storeId, schemaName);
-        User user = service.addPointsToUser(tokenAndId, HintahaukkaService.countPoints(priceBefore, priceAfter), schemaName);
-        service.addStorePointsToUser(user, storeId, HintahaukkaService.countPoints(priceBefore, priceAfter), schemaName);
-
+        User user = service.addThePriceOfGivenProductToDatabase(ean, cents, storeId, tokenAndId, schemaName);
+        
         // Build and send HTTP response:
-        if(product == null || user == null) {  // Error response.
+        if(user == null) {  // Error response.
             res.status(500);
             return "Server error!";
         }
