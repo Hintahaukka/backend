@@ -5,7 +5,7 @@ import hintahaukka.domain.bundles.PointsAndPrices;
 import hintahaukka.domain.bundles.InfoAndPrices;
 import hintahaukka.domain.bundles.PriceTransferUnit;
 import hintahaukka.domain.bundles.PricesOfStore;
-import hintahaukka.domain.bundles.PricesOfStoresAndPoints;
+import hintahaukka.domain.bundles.PointsAndPricesOfStores;
 import hintahaukka.domain.bundles.PriceInStore;
 import hintahaukka.domain.*;
 import hintahaukka.database.*;
@@ -47,7 +47,39 @@ public class HintahaukkaService {
         this.storeDao = storeDao;
         this.userDao = userDao;
         this.storePointsDao = storePointsDao;
-    }    
+    }
+    
+    /**
+     * After scanning a product with the Hintahaukka app, this method implements logic
+     * to serve the first http query made by the app.
+     * @param ean A string that represents the EAN code of the scanned product.
+     * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
+     * @return An InfoAndPrices object that contains the name of the product and a list of the product's prices in different stores.
+     */
+    public InfoAndPrices priceOfGivenProductInDifferentStores(String ean, String schemaName) {
+        Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
+        if(product == null) return null;
+        
+        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
+        try{
+            // Get all prices for the product from the database.
+            ArrayList<Price> prices = priceDao.findAllForProduct(product, schemaName);
+
+            // For every price of the product, find out from what store the price is from.
+            for(Price price : prices) {
+                ptuList.add(new PriceTransferUnit(
+                        price.getCents(), 
+                        storeDao.findOne(price.getStoreId(), schemaName).getGoogleStoreId(),
+                        price.getCreated()
+                ));
+            }            
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
+        
+        return new InfoAndPrices(product.getEan(), product.getName(), ptuList);
+    }
     
     /**
      * After scanning a product with the Hintahaukka app, this method implements logic
@@ -92,171 +124,6 @@ public class HintahaukkaService {
     }
     
     /**
-     * After scanning a product with the Hintahaukka app, this method implements logic
-     * to serve the first http query made by the app.
-     * @param ean A string that represents the EAN code of the scanned product.
-     * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
-     * @return An InfoAndPrices object that contains the name of the product and a list of the product's prices in different stores.
-     */
-    public InfoAndPrices priceOfGivenProductInDifferentStores(String ean, String schemaName) {
-        Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
-        if(product == null) return null;
-        
-        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
-        try{
-            // Get all prices for the product from the database.
-            ArrayList<Price> prices = priceDao.findAllForProduct(product, schemaName);
-
-            // For every price of the product, find out from what store the price is from.
-            for(Price price : prices) {
-                ptuList.add(new PriceTransferUnit(
-                        price.getCents(), 
-                        storeDao.findOne(price.getStoreId(), schemaName).getGoogleStoreId(),
-                        price.getCreated()
-                ));
-            }            
-        } catch(Exception e) {
-            System.out.println(e.toString());
-            return null;
-        }
-        
-        return new InfoAndPrices(product.getEan(), product.getName(), ptuList);
-    }
-    
-    /**
-     * This method implements logic to serve the http query made by the app when the user
-     * wants to know the price of his/hers product list in different stores.
-     * @param eans The EAN codes of the user's product list.
-     * @param tokenAndId Defines the user from whom the points are consumed.
-     * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
-     * @return A PricesOfStoresAndPoints object which contains user's points after his/hers points are consumed due to the price query and the results of the price query.
-     */
-    public PricesOfStoresAndPoints pricesOfGivenProductsInDifferentStores(String[] eans, String tokenAndId, String schemaName) {
-        HashMap<Integer, HashMap<String, PriceInStore>> stores = new HashMap<>();
-        
-        HashMap<String, Integer> averagePrices = new HashMap<>();
-        
-        // A loop which main task is to find the prices of a given product in different stores, and then assort these
-        // prices to the corresponfing stores.
-        for(String ean : eans) {
-            
-            Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
-            if(product == null) return null;
-
-            ArrayList<Price> prices;
-            try{
-                // Find the prices of a given product in different stores.
-                prices = priceDao.findAllForProduct(product, schemaName);
-            } catch(Exception e) {
-                System.out.println(e.toString());
-                return null;
-            }
-            
-            if(prices.isEmpty()) continue;
-            
-            int centsTotal = 0;
-            
-            // Assort prices to the corresponfing stores.
-            for(Price price : prices) {
-                HashMap<String, PriceInStore> store = stores.getOrDefault(price.getStoreId(), new HashMap<>());
-                store.put(product.getEan(), new PriceInStore(product.getEan(), price.getCents(), price.getCreated()));
-                stores.put(price.getStoreId(), store);
-
-                centsTotal += price.getCents();
-            }
-
-            // Average price for the product is also calculated.
-            int averagePrice = centsTotal / prices.size();
-            averagePrices.put(ean, averagePrice);
-        }
-        
-        ArrayList<PricesOfStore> storesResult = new ArrayList<>();
-
-        // A loop which main task is to order the prices of a store in correct order and to
-        // calculate the total sum of the prices in the store.
-        // If a store is missing a price for requested product, the price is replaced with the average price of the product.
-        for(Map.Entry<Integer, HashMap<String, PriceInStore>> store : stores.entrySet()) {
-            HashMap<String, PriceInStore> pricesInStore = store.getValue();
-            
-            // Stores have been handled with database row IDs up until now.
-            // Here we find out the googleStoreIDs for stores.
-            String googleStoreId;
-            try{
-                googleStoreId = storeDao.findOne(store.getKey(), schemaName).getGoogleStoreId();
-            } catch(Exception e) {
-                System.out.println(e.toString());
-                return null;
-            }
-            
-            int storeCentsTotal = 0;
-            ArrayList<PriceInStore> pricesInStoreAL = new ArrayList<>();
-            
-            // Main task of the loop:
-            for(String ean : eans) {
-                if(averagePrices.containsKey(ean)){
-                    pricesInStoreAL.add(pricesInStore.getOrDefault(ean, new PriceInStore(ean, averagePrices.get(ean), "")));
-                    storeCentsTotal += pricesInStoreAL.get(pricesInStoreAL.size() - 1).getCents();
-                }
-            }
-            
-            storesResult.add(new PricesOfStore(googleStoreId, storeCentsTotal, pricesInStoreAL));
-        }
-        
-        // The results are ordered according to the total sum of the prices in the store.
-        storesResult.sort((pos1, pos2) -> {
-            if(pos1.getStoreCentsTotal() < pos2.getStoreCentsTotal()) return -1;
-            else if(pos1.getStoreCentsTotal() == pos2.getStoreCentsTotal()) return 0;
-            else return 1;
-        });
-        
-        // Price information query consumes user's points.
-        User user = this.consumePointsFromUser(tokenAndId, eans.length, schemaName);
-        if(user == null) return null;
-        
-        PricesOfStoresAndPoints resultWithPoints = new PricesOfStoresAndPoints(user.getPointsTotal(), user.getPointsUnused(), storesResult);
-        
-        return resultWithPoints;
-    }
-    
-    /**
-     * This method implements logic to serve the http query made by the app when the user
-     * wants to know the price of one of the products on his/hers product list in different stores.
-     * @param ean The EAN code of the product.
-     * @param tokenAndId Defines the user from whom the points are consumed.
-     * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
-     * @return A PointsAndPrices object which contains user's points after his/hers points are consumed due to the price query and the results of the price query.
-     */
-    public PointsAndPrices priceOfGivenProductInDifferentStoresWithNoInfo(String ean, String tokenAndId, String schemaName) {
-        Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
-        if(product == null) return null;
-        
-        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
-        try{
-            // Get all prices for the product from the database.
-            ArrayList<Price> prices = priceDao.findAllForProduct(product, schemaName);
-
-            // For every price of the product, find out from what store the price is from.
-            for(Price price : prices) {
-                ptuList.add(new PriceTransferUnit(
-                        price.getCents(), 
-                        storeDao.findOne(price.getStoreId(), schemaName).getGoogleStoreId(),
-                        price.getCreated()
-                ));
-            }            
-        } catch(Exception e) {
-            System.out.println(e.toString());
-            return null;
-        }
-        
-        User user = this.consumePointsFromUser(tokenAndId, 1, schemaName);
-        if(user == null) return null;
-        
-        PointsAndPrices result = new PointsAndPrices(user.getPointsTotal(), user.getPointsUnused(), ptuList);
-        
-        return result;
-    }
-    
-    /**
      * When Hintahaukka app is launched for the first time on a phone, this method implements logic
      * to serve the http query which the app makes in order to get a unique ID which is later used to identify the user.
      * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
@@ -298,6 +165,176 @@ public class HintahaukkaService {
         }
         
         return success;
+    }
+    
+    /**
+     * This method implements logic to serve the http query made by the app in order to send a name
+     * for a product which does not yet have a name.
+     * @param ean The EAN code of the product.
+     * @param tokenAndId Defines the user to whom the points are given.
+     * @param newProductName The new name of the product.
+     * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
+     * @return 
+     */
+    public Boolean updateProductNameAndAddPoints(String ean, String tokenAndId, String newProductName, String schemaName) {
+        Boolean success = null;
+        
+        try{
+            Product product = productDao.findOne(ean, schemaName);
+            if(product.getName().equals("")){  // Check that product name is not already added.
+                addPointsToUser(tokenAndId, 5, schemaName);
+                success = productDao.updateName(ean, newProductName, schemaName);
+            }
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return false;
+        }
+        
+        return success;
+    }
+    
+    /**
+     * This method implements logic to serve the http query made by the app when the user
+     * wants to know the price of his/hers product list in different stores.
+     * @param eans The EAN codes of the user's product list.
+     * @param tokenAndId Defines the user from whom the points are consumed.
+     * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
+     * @return A PointsAndPricesOfStores object which contains user's points after his/hers points are consumed due to the price query and the results of the price query.
+     */
+    public PointsAndPricesOfStores pricesOfGivenProductsInDifferentStores(String[] eans, String tokenAndId, String schemaName) {
+        HashMap<Integer, HashMap<String, PriceInStore>> stores = new HashMap<>();
+        
+        HashMap<String, Integer> averagePrices = new HashMap<>();
+        
+        Boolean success = findPricesForEansAndAssortThemForStoresAndCalculateAveragePricesForEans(eans, stores, averagePrices, schemaName);
+        if(success == null) return null;
+        
+        ArrayList<PricesOfStore> storesResult = new ArrayList<>();
+
+        // A loop which main task is to order the prices of a store in correct order and to
+        // calculate the total sum of the prices in the store.
+        // If a store is missing a price for requested product, the price is replaced with the average price of the product.
+        for(Map.Entry<Integer, HashMap<String, PriceInStore>> store : stores.entrySet()) {
+            HashMap<String, PriceInStore> pricesInStore = store.getValue();
+            
+            // Stores have been handled with database row IDs up until now.
+            // Here we find out the googleStoreIDs for stores.
+            String googleStoreId;
+            try{
+                googleStoreId = storeDao.findOne(store.getKey(), schemaName).getGoogleStoreId();
+            } catch(Exception e) {
+                System.out.println(e.toString());
+                return null;
+            }
+            
+            int storeCentsTotal = 0;
+            ArrayList<PriceInStore> pricesInStoreAL = new ArrayList<>();
+            
+            // Main task of the loop:
+            for(String ean : eans) {
+                if(averagePrices.containsKey(ean)){ // If the product does not have an average price, no prices were found for the product.
+                    pricesInStoreAL.add(pricesInStore.getOrDefault(ean, new PriceInStore(ean, averagePrices.get(ean), "")));
+                    storeCentsTotal += pricesInStoreAL.get(pricesInStoreAL.size() - 1).getCents();
+                }
+            }
+            
+            storesResult.add(new PricesOfStore(googleStoreId, storeCentsTotal, pricesInStoreAL));
+        }
+        
+        // The results are ordered according to the total sum of the prices in the store.
+        storesResult.sort((pos1, pos2) -> {
+            if(pos1.getStoreCentsTotal() < pos2.getStoreCentsTotal()) return -1;
+            else if(pos1.getStoreCentsTotal() == pos2.getStoreCentsTotal()) return 0;
+            else return 1;
+        });
+        
+        // Price information query consumes user's points.
+        User user = this.consumePointsFromUser(tokenAndId, eans.length, schemaName);
+        if(user == null) return null;
+        
+        PointsAndPricesOfStores resultWithPoints = new PointsAndPricesOfStores(user.getPointsTotal(), user.getPointsUnused(), storesResult);
+        
+        return resultWithPoints;
+    }
+    
+    /**
+     * Assisting method of "pricesOfGivenProductsInDifferentStores" method.
+     */
+    Boolean findPricesForEansAndAssortThemForStoresAndCalculateAveragePricesForEans(
+            String[] eans, HashMap<Integer, HashMap<String, PriceInStore>> stores, HashMap<String, Integer> averagePrices, String schemaName) {
+        // A loop with a main task to find the prices of a given product in different stores, and then assort these
+        // prices to the corresponfing stores.
+        for(String ean : eans) {
+            
+            Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
+            if(product == null) return null;
+
+            ArrayList<Price> prices;
+            try{
+                // Find the prices of a given product in different stores.
+                prices = priceDao.findAllForProduct(product, schemaName);
+            } catch(Exception e) {
+                System.out.println(e.toString());
+                return null;
+            }
+            
+            if(prices.isEmpty()) continue;
+            
+            int centsTotal = 0;
+            
+            // Assort prices to the corresponfing stores.
+            for(Price price : prices) {
+                HashMap<String, PriceInStore> store = stores.getOrDefault(price.getStoreId(), new HashMap<>());
+                store.put(product.getEan(), new PriceInStore(product.getEan(), price.getCents(), price.getCreated()));
+                stores.put(price.getStoreId(), store);
+
+                centsTotal += price.getCents();
+            }
+
+            // Average price for the product is also calculated.
+            int averagePrice = centsTotal / prices.size();
+            averagePrices.put(ean, averagePrice);
+        }
+        
+        return Boolean.TRUE;
+    }
+    
+    /**
+     * This method implements logic to serve the http query made by the app when the user
+     * wants to know the price of one of the products on his/hers product list in different stores.
+     * @param ean The EAN code of the product.
+     * @param tokenAndId Defines the user from whom the points are consumed.
+     * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
+     * @return A PointsAndPrices object which contains user's points after his/hers points are consumed due to the price query and the results of the price query.
+     */
+    public PointsAndPrices priceOfGivenProductInDifferentStoresWithNoInfo(String ean, String tokenAndId, String schemaName) {
+        Product product = getProductFromDbAddProductToDbIfNecessary(ean, schemaName);
+        if(product == null) return null;
+        
+        ArrayList<PriceTransferUnit> ptuList = new ArrayList<>();
+        try{
+            // Get all prices for the product from the database.
+            ArrayList<Price> prices = priceDao.findAllForProduct(product, schemaName);
+
+            // For every price of the product, find out from what store the price is from.
+            for(Price price : prices) {
+                ptuList.add(new PriceTransferUnit(
+                        price.getCents(), 
+                        storeDao.findOne(price.getStoreId(), schemaName).getGoogleStoreId(),
+                        price.getCreated()
+                ));
+            }            
+        } catch(Exception e) {
+            System.out.println(e.toString());
+            return null;
+        }
+        
+        User user = this.consumePointsFromUser(tokenAndId, 1, schemaName);
+        if(user == null) return null;
+        
+        PointsAndPrices result = new PointsAndPrices(user.getPointsTotal(), user.getPointsUnused(), ptuList);
+        
+        return result;
     }
     
     /**
@@ -356,22 +393,6 @@ public class HintahaukkaService {
         return leaderboard;
     }
     
-    public Boolean updateProductNameAndAddPoints(String ean, String tokenAndId, String newProductName, String schemaName) {
-        Boolean success = null;
-        
-        try{
-            Product product = productDao.findOne(ean, schemaName);
-            if(product.getName().equals("")){  // Check that product name is not already added.
-                addPointsToUser(tokenAndId, 5, schemaName);
-                success = productDao.updateName(ean, newProductName, schemaName);
-            }
-        } catch(Exception e) {
-            System.out.println(e.toString());
-            return false;
-        }
-        
-        return success;
-    }
     
     
     

@@ -5,7 +5,7 @@ import hintahaukka.domain.bundles.NicknameAndPoints;
 import hintahaukka.domain.bundles.PointsAndPrices;
 import hintahaukka.domain.bundles.PriceTransferUnit;
 import hintahaukka.domain.bundles.PricesOfStore;
-import hintahaukka.domain.bundles.PricesOfStoresAndPoints;
+import hintahaukka.domain.bundles.PointsAndPricesOfStores;
 import hintahaukka.database.*;
 import hintahaukka.domain.*;
 import java.util.ArrayList;
@@ -161,7 +161,7 @@ public class HintahaukkaServiceTest {
         String tokenAndId = service.getNewId("test");
         service.addPointsToUser(tokenAndId, 10, "test");
         
-        PricesOfStoresAndPoints result = null;
+        PointsAndPricesOfStores result = null;
         ArrayList<PricesOfStore> storesResult = null;
         try {
             String tokenAndIdOfAdder = service.getNewId("test");
@@ -217,7 +217,7 @@ public class HintahaukkaServiceTest {
         String tokenAndId = service.getNewId("test");
         service.addPointsToUser(tokenAndId, 3, "test");
         
-        PricesOfStoresAndPoints result = null;
+        PointsAndPricesOfStores result = null;
         try {
             String tokenAndIdOfAdder = service.getNewId("test");
             service.addThePriceOfGivenProductToDatabase("1", 100, "1", tokenAndIdOfAdder, "test");

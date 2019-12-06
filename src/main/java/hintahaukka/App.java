@@ -3,7 +3,7 @@ package hintahaukka;
 import hintahaukka.domain.bundles.NicknameAndPoints;
 import hintahaukka.domain.bundles.PointsAndPrices;
 import hintahaukka.domain.bundles.InfoAndPrices;
-import hintahaukka.domain.bundles.PricesOfStoresAndPoints;
+import hintahaukka.domain.bundles.PointsAndPricesOfStores;
 import hintahaukka.database.*;
 import hintahaukka.domain.*;
 import hintahaukka.service.*;
@@ -251,7 +251,7 @@ public class App {
         }
         
         // Hintahaukka logic:
-        PricesOfStoresAndPoints result = service.pricesOfGivenProductsInDifferentStores(eans, tokenAndId, schemaName);
+        PointsAndPricesOfStores result = service.pricesOfGivenProductsInDifferentStores(eans, tokenAndId, schemaName);
 
         // Build and send HTTP response:
         if(result == null) {  // Error response.
