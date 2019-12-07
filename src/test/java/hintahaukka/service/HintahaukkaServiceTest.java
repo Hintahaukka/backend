@@ -1,13 +1,8 @@
 package hintahaukka.service;
 
-import hintahaukka.domain.bundles.InfoAndPrices;
-import hintahaukka.domain.bundles.NicknameAndPoints;
-import hintahaukka.domain.bundles.PointsAndPrices;
-import hintahaukka.domain.bundles.PriceTransferUnit;
-import hintahaukka.domain.bundles.PricesOfStore;
-import hintahaukka.domain.bundles.PointsAndPricesOfStores;
 import hintahaukka.database.*;
 import hintahaukka.domain.*;
+import hintahaukka.domain.bundles.*;
 import java.util.ArrayList;
 import org.junit.Test;
 import org.junit.Before;
@@ -49,7 +44,7 @@ public class HintahaukkaServiceTest {
             service.addThePriceOfGivenProductToDatabase("1", 110, "1", tokenAndId, "test");
             service.addThePriceOfGivenProductToDatabase("1", 120, "2", tokenAndId, "test");
             service.addThePriceOfGivenProductToDatabase("1", 130, "3", tokenAndId, "test");
-            ptuList = service.priceOfGivenProductInDifferentStores("1", "test");
+            ptuList = service.priceOfGivenProductInDifferentStoresAndProductInfo("1", "test");
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -65,7 +60,7 @@ public class HintahaukkaServiceTest {
             service.addThePriceOfGivenProductToDatabase("1", 110, "1", tokenAndId, "test");
             service.addThePriceOfGivenProductToDatabase("1", 120, "2", tokenAndId, "test");
             service.addThePriceOfGivenProductToDatabase("2", 130, "3", tokenAndId, "test");
-            ptuList = service.priceOfGivenProductInDifferentStores("1", "test");
+            ptuList = service.priceOfGivenProductInDifferentStoresAndProductInfo("1", "test");
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -80,7 +75,7 @@ public class HintahaukkaServiceTest {
             String tokenAndId = service.getNewId("test");
             service.addThePriceOfGivenProductToDatabase("1", 110, "1", tokenAndId, "test");
             service.addThePriceOfGivenProductToDatabase("1", 99, "1", tokenAndId, "test");
-            ptuList = service.priceOfGivenProductInDifferentStores("1", "test");
+            ptuList = service.priceOfGivenProductInDifferentStoresAndProductInfo("1", "test");
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -169,7 +164,7 @@ public class HintahaukkaServiceTest {
             service.addThePriceOfGivenProductToDatabase("2", 200, "1", tokenAndIdOfAdder, "test");
             service.addThePriceOfGivenProductToDatabase("2", 300, "2", tokenAndIdOfAdder, "test");
             service.addThePriceOfGivenProductToDatabase("3", 300, "2", tokenAndIdOfAdder, "test");
-            result = service.pricesOfGivenProductsInDifferentStores(new String[]{"1","2","3","4"}, tokenAndId, "test");
+            result = service.pricesOfGivenProductsInDifferentStoresAndUserPoints(new String[]{"1","2","3","4"}, tokenAndId, "test");
             storesResult = result.getPricesOfStores();
         } catch (Exception e) {
             fail(e.getMessage());
@@ -224,7 +219,7 @@ public class HintahaukkaServiceTest {
             service.addThePriceOfGivenProductToDatabase("2", 200, "1", tokenAndIdOfAdder, "test");
             service.addThePriceOfGivenProductToDatabase("2", 300, "2", tokenAndIdOfAdder, "test");
             service.addThePriceOfGivenProductToDatabase("3", 300, "2", tokenAndIdOfAdder, "test");
-            result = service.pricesOfGivenProductsInDifferentStores(new String[]{"1","2","3","4"}, tokenAndId, "test");
+            result = service.pricesOfGivenProductsInDifferentStoresAndUserPoints(new String[]{"1","2","3","4"}, tokenAndId, "test");
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -245,7 +240,7 @@ public class HintahaukkaServiceTest {
             service.addThePriceOfGivenProductToDatabase("2", 200, "1", tokenAndIdOfAdder, "test");
             service.addThePriceOfGivenProductToDatabase("2", 300, "2", tokenAndIdOfAdder, "test");
             service.addThePriceOfGivenProductToDatabase("3", 300, "2", tokenAndIdOfAdder, "test");
-            result = service.priceOfGivenProductInDifferentStoresWithNoInfo("2", tokenAndId, "test");
+            result = service.priceOfGivenProductInDifferentStoresAndUserPoints("2", tokenAndId, "test");
             prices = result.getPrices();
         } catch (Exception e) {
             fail(e.getMessage());

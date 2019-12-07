@@ -1,19 +1,18 @@
 package hintahaukka;
 
+import static hintahaukka.Validators.*;
+import hintahaukka.database.*;
 import hintahaukka.domain.bundles.NicknameAndPoints;
 import hintahaukka.domain.bundles.PointsAndPrices;
 import hintahaukka.domain.bundles.InfoAndPrices;
 import hintahaukka.domain.bundles.PointsAndPricesOfStores;
-import hintahaukka.database.*;
-import hintahaukka.domain.*;
-import hintahaukka.service.*;
+import hintahaukka.domain.User;
+import hintahaukka.service.HintahaukkaService;
 import java.util.ArrayList;
-import static hintahaukka.Validators.*;
 import static spark.Spark.*;
 import spark.Request;
 import spark.Response;
 import com.google.gson.Gson;
-import java.util.ArrayList;
 
 public class App {
     
@@ -141,7 +140,7 @@ public class App {
         String ean = req.queryParams("ean");
 
         // Hintahaukka logic:
-        InfoAndPrices infoAndPrices = service.priceOfGivenProductInDifferentStores(ean, schemaName);
+        InfoAndPrices infoAndPrices = service.priceOfGivenProductInDifferentStoresAndProductInfo(ean, schemaName);
 
         // Build and send HTTP response:
         if(infoAndPrices == null) {  // Error response.
@@ -251,7 +250,7 @@ public class App {
         }
         
         // Hintahaukka logic:
-        PointsAndPricesOfStores result = service.pricesOfGivenProductsInDifferentStores(eans, tokenAndId, schemaName);
+        PointsAndPricesOfStores result = service.pricesOfGivenProductsInDifferentStoresAndUserPoints(eans, tokenAndId, schemaName);
 
         // Build and send HTTP response:
         if(result == null) {  // Error response.
@@ -275,7 +274,7 @@ public class App {
         String ean = req.queryParams("ean");
 
         // Hintahaukka logic:
-        PointsAndPrices result = service.priceOfGivenProductInDifferentStoresWithNoInfo(ean, tokenAndId, schemaName);
+        PointsAndPrices result = service.priceOfGivenProductInDifferentStoresAndUserPoints(ean, tokenAndId, schemaName);
 
         // Build and send HTTP response:
         if(result == null) {  // Error response.

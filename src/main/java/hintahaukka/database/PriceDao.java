@@ -1,6 +1,8 @@
 package hintahaukka.database;
 
-import hintahaukka.domain.*;
+import hintahaukka.domain.Price;
+import hintahaukka.domain.Product;
+import hintahaukka.domain.Store;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

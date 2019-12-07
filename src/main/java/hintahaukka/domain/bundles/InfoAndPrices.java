@@ -1,6 +1,5 @@
 package hintahaukka.domain.bundles;
 
-import hintahaukka.domain.bundles.PriceTransferUnit;
 import java.util.ArrayList;
 
 public class InfoAndPrices {

@@ -1,6 +1,6 @@
 package hintahaukka.database;
 
-import hintahaukka.domain.*;
+import hintahaukka.domain.Product;
 import java.sql.SQLException;
 import java.net.URISyntaxException;
 

@@ -1,6 +1,5 @@
 package hintahaukka.domain.bundles;
 
-import hintahaukka.domain.bundles.PriceInStore;
 import java.util.ArrayList;
 
 public class PricesOfStore {
