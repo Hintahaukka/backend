@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 public class Database {
     
@@ -39,14 +40,14 @@ public class Database {
         }        
     }
     
-    Object executeQueryAndExpectOneResult(String statement, PreparedStatementHandler prepHandler, ResultSetHandler resHandler) throws URISyntaxException, SQLException {
+    <T> T executeQueryAndExpectOneResult(String statement, PreparedStatementHandler prepHandler, ResultSetHandler<T> resHandler) throws URISyntaxException, SQLException {
         Connection conn = this.getConnection();
         PreparedStatement stmt = conn.prepareStatement(statement);
         prepHandler.handlePreparedStatement(stmt);
         
         ResultSet rs = stmt.executeQuery();
 
-        Object object = null;
+        T object = null;
         if (rs.next()) {
             object = resHandler.handleResultSet(rs);
         }
@@ -58,14 +59,33 @@ public class Database {
         return object;
     }
     
+    <T> ArrayList<T> executeQueryAndExpectMultipleResults(String statement, PreparedStatementHandler prepHandler, ResultSetHandler<T> resHandler) throws URISyntaxException, SQLException {
+        Connection conn = this.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(statement);
+        prepHandler.handlePreparedStatement(stmt);
+
+        ResultSet rs = stmt.executeQuery();
+
+        ArrayList<T> objects = new ArrayList<>();
+        while (rs.next()) {
+            T object = resHandler.handleResultSet(rs);
+            objects.add(object);
+        }
+
+        rs.close();
+        stmt.close();
+        conn.close();
+
+        return objects;
+    }
+    
     interface PreparedStatementHandler {
         public void handlePreparedStatement(PreparedStatement statement) throws SQLException; 
     }
     
-    interface ResultSetHandler {
-        public Object handleResultSet(ResultSet rs) throws SQLException; 
+    interface ResultSetHandler<T> {
+        public T handleResultSet(ResultSet rs) throws SQLException; 
     }
-    
     
     int countTables(String schemaName) throws URISyntaxException, SQLException {
         Connection connection = this.getConnection();
