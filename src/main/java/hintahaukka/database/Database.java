@@ -34,10 +34,7 @@ public class Database {
     }
     
     public void clearDatabase(String schemaName) throws URISyntaxException, SQLException {
-        String[] statements = createTableStatements(schemaName);
-        if (countTables(schemaName) == statements.length) {
-            executeStatements(new String[]{"DROP SCHEMA IF EXISTS " + schemaName + " CASCADE"});
-        }        
+        executeStatements(new String[]{"DROP SCHEMA IF EXISTS " + schemaName + " CASCADE"});     
     }
     
     <T> T executeQueryAndExpectOneResult(String statement, PreparedStatementHandler prepHandler, ResultSetHandler<T> resHandler) throws URISyntaxException, SQLException {

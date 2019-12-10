@@ -314,6 +314,7 @@ public class HintahaukkaService {
     
     
     
+    
     // Assisting methods:
     
     /**
@@ -404,7 +405,7 @@ public class HintahaukkaService {
      * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
      * @return User object with added points
      */
-    public User addPointsToUser(String tokenAndId, int newPoints, String schemaName) {
+    User addPointsToUser(String tokenAndId, int newPoints, String schemaName) {
         int id = Integer.parseInt(tokenAndId.substring(32));
         String token = tokenAndId.substring(0, 32);
         
@@ -431,7 +432,7 @@ public class HintahaukkaService {
      * @param newPoints Amount of store points to be given to the user.
      * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
      */
-    public void addStorePointsToUser(User user, String storeId, int newPoints, String schemaName) {
+    void addStorePointsToUser(User user, String storeId, int newPoints, String schemaName) {
         try {
             Store store = storeDao.findOne(storeId, schemaName);
             
@@ -455,7 +456,7 @@ public class HintahaukkaService {
      * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
      * @return User object with updated points, or null if the user didn't have sufficient amount of unused points.
      */
-    public User consumePointsFromUser(String tokenAndId, int pointsConsumed, String schemaName) {
+    User consumePointsFromUser(String tokenAndId, int pointsConsumed, String schemaName) {
         int id = Integer.parseInt(tokenAndId.substring(32));
         String token = tokenAndId.substring(0, 32);
         
@@ -486,7 +487,7 @@ public class HintahaukkaService {
      * @param after The new price
      * @return points deserved
      */
-    public static int countPoints(Price before, Price after) {
+    static int countPoints(Price before, Price after) {
         if (after == null) {
             return 0;
         }
@@ -508,7 +509,7 @@ public class HintahaukkaService {
         }
     }
     
-    private static long differenceInDays(String dateFirst, String dateLast) {
+    static long differenceInDays(String dateFirst, String dateLast) {
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
             Date firstDate = dateFormat.parse(dateFirst);
@@ -528,7 +529,7 @@ public class HintahaukkaService {
      * @param schemaName A string switch that dictates which database is used to serve the query, "public" for production database, "test" for test database.
      * @return The latest price
      */
-    public Price latestPrice(String ean, String storeId, String schemaName) {
+    Price latestPrice(String ean, String storeId, String schemaName) {
         Price price;
         try {
             Product product = productDao.findOne(ean, schemaName);
