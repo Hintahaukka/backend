@@ -1,5 +1,8 @@
 package hintahaukka.domain;
 
+/**
+ * Represents a product.
+ */
 public class Product {
     
     private int id;

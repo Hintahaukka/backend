@@ -1,6 +1,5 @@
 package hintahaukka.database;
 
-import hintahaukka.database.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
