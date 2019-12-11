@@ -13,7 +13,8 @@ public class StoreDao {
     }
     
     public Store add(String googleStoreId, String name, String schemaName) throws URISyntaxException, SQLException {
-        return database.executeQueryAndExpectOneResult("INSERT INTO " + schemaName + ".Store (googleStoreId, name) VALUES (?, ?) RETURNING id", statement -> {
+        return database.executeQueryAndExpectOneResult(
+                "INSERT INTO " + schemaName + ".Store (googleStoreId, name) VALUES (?, ?) RETURNING id", statement -> {
             statement.setString(1, googleStoreId);
             statement.setString(2, name);  
         }, resultSet -> 
@@ -21,14 +22,16 @@ public class StoreDao {
     }
     
     public Store findOne(String googleStoreId, String schemaName) throws URISyntaxException, SQLException {
-        return database.executeQueryAndExpectOneResult("SELECT * FROM " + schemaName + ".Store WHERE googleStoreId = ?", statement -> {
+        return database.executeQueryAndExpectOneResult(
+                "SELECT * FROM " + schemaName + ".Store WHERE googleStoreId = ?", statement -> {
             statement.setString(1, googleStoreId);     
         }, resultSet -> 
             new Store(resultSet.getInt("id"), resultSet.getString("googleStoreId"), resultSet.getString("name")));
     }
     
     public Store findOne(int id, String schemaName) throws URISyntaxException, SQLException {
-        return database.executeQueryAndExpectOneResult("SELECT * FROM " + schemaName + ".Store WHERE id = ?", statement -> {
+        return database.executeQueryAndExpectOneResult(
+                "SELECT * FROM " + schemaName + ".Store WHERE id = ?", statement -> {
             statement.setInt(1, id);     
         }, resultSet -> 
             new Store(resultSet.getInt("id"), resultSet.getString("googleStoreId"), resultSet.getString("name")));

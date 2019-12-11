@@ -1,5 +1,9 @@
 package hintahaukka.domain;
 
+/**
+ * Represents user's points earned from a specific store.
+ * These points should be also added to the user's points tracking attributes.
+ */
 public class StorePoints {
     
     private int id;

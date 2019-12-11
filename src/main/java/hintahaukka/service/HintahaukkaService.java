@@ -559,9 +559,15 @@ public class HintahaukkaService {
         return product;
     }
     
+    /*
+     * This method was used to fetch names for products from a product information service.
+     * The service did not have many product names, therefore this method is not currently used,
+     * and was implemented in the first place mainly for demonstration purposes.
+     * The key to the service has been deleted from the API url.
+     */
     static String getProductNameFromApi(String barcode) throws MalformedURLException, IOException {
         String productName;
-        String urlString = "https://api.barcodelookup.com/v2/products?barcode=" + barcode + "&formatted=y&key=kcz6mpkh3x2rblgh46b2cpcda9p2xy";
+        String urlString = "https://api.barcodelookup.com/v2/products?barcode=" + barcode + "&formatted=y&key=KEY_MISSING_FROM_HERE";
         URL url = new URL (urlString);
         HttpURLConnection request = (HttpURLConnection) url.openConnection();
 

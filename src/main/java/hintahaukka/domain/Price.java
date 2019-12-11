@@ -1,5 +1,8 @@
 package hintahaukka.domain;
 
+/**
+ * Represents a price of a product in a store.
+ */
 public class Price {
     
     private int id;

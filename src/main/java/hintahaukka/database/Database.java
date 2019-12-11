@@ -14,6 +14,13 @@ public class Database {
     public Database () {
     }
     
+    /**
+     * Establishes and gives a connection to the database.
+     * Implementation of the method specific to Heroku.
+     * @return The connection to the database.
+     * @throws URISyntaxException
+     * @throws SQLException 
+     */
     public Connection getConnection() throws URISyntaxException, SQLException {
         URI dbUri = new URI(System.getenv("DATABASE_URL"));
 

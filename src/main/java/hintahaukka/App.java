@@ -23,6 +23,7 @@ public class App {
         serviceInitialization();
         port(getHerokuAssignedPort());
         
+        // Production routes:
         
         post("/getInfoAndPrices", (req, res) -> {
             return getInfoAndPricesFromGivenSchema("public", req, res);
@@ -61,6 +62,8 @@ public class App {
         });
         
         
+        // Test routes:
+        
         post("/test/getInfoAndPrices", (req, res) -> {
             return getInfoAndPricesFromGivenSchema("test", req, res);
         });
@@ -97,6 +100,8 @@ public class App {
             return getLeaderboardFromGivenSchema("test", req, res);
         });
         
+        
+        // Shared routes:
         
         get("/reset/:schemaName", (req, res) -> {
             String schemaName = req.params(":schemaName");

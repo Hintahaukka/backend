@@ -16,7 +16,8 @@ public class PriceDao {
     }
     
     public Boolean addWithCurrentTimestamp(Product product, Store store, int cents, String schemaName) throws URISyntaxException, SQLException {
-        return database.executeQueryAndExpectOneResult("INSERT INTO " + schemaName + ".Price (product_id, store_id, cents) VALUES (?, ?, ?) RETURNING id", statement -> {
+        return database.executeQueryAndExpectOneResult(
+                "INSERT INTO " + schemaName + ".Price (product_id, store_id, cents) VALUES (?, ?, ?) RETURNING id", statement -> {
             statement.setInt(1, product.getId());
             statement.setInt(2, store.getId());
             statement.setInt(3, cents);     
@@ -25,7 +26,8 @@ public class PriceDao {
     }
 
     public Boolean delete(Product product, Store store, String schemaName) throws URISyntaxException, SQLException {
-        return database.executeQueryAndExpectOneResult("DELETE FROM " + schemaName + ".Price WHERE product_id = ? AND store_id = ? RETURNING id", statement -> {
+        return database.executeQueryAndExpectOneResult(
+                "DELETE FROM " + schemaName + ".Price WHERE product_id = ? AND store_id = ? RETURNING id", statement -> {
             statement.setInt(1, product.getId());
             statement.setInt(2, store.getId());   
         }, resultSet -> 
@@ -33,7 +35,8 @@ public class PriceDao {
     }
     
     public Price findOne(Product product, Store store, String schemaName) throws URISyntaxException, SQLException {
-        return database.executeQueryAndExpectOneResult("SELECT * FROM " + schemaName + ".Price WHERE product_id = ? AND store_id = ?", statement -> {
+        return database.executeQueryAndExpectOneResult(
+                "SELECT * FROM " + schemaName + ".Price WHERE product_id = ? AND store_id = ?", statement -> {
             statement.setInt(1, product.getId());
             statement.setInt(2, store.getId());        
         }, resultSet -> 
@@ -41,7 +44,8 @@ public class PriceDao {
     }
     
     public ArrayList<Price> findAllForProduct(Product product, String schemaName) throws URISyntaxException, SQLException {
-        return database.executeQueryAndExpectMultipleResults("SELECT * FROM " + schemaName + ".Price WHERE product_id = ?", statement -> {
+        return database.executeQueryAndExpectMultipleResults(
+                "SELECT * FROM " + schemaName + ".Price WHERE product_id = ?", statement -> {
             statement.setInt(1, product.getId());
         }, resultSet -> 
             new Price(resultSet.getInt("id"), resultSet.getInt("product_id"), resultSet.getInt("store_id"), resultSet.getInt("cents"), resultSet.getTimestamp("created").toString()));
