@@ -1,15 +1,18 @@
 package hintahaukka;
 
-import hintahaukka.database.*;
-import hintahaukka.domain.*;
-import hintahaukka.service.*;
-import java.util.ArrayList;
 import static hintahaukka.Validators.*;
+import hintahaukka.database.*;
+import hintahaukka.domain.bundles.NicknameAndPoints;
+import hintahaukka.domain.bundles.PointsAndPrices;
+import hintahaukka.domain.bundles.InfoAndPrices;
+import hintahaukka.domain.bundles.PointsAndPricesOfStores;
+import hintahaukka.domain.User;
+import hintahaukka.service.HintahaukkaService;
+import java.util.ArrayList;
 import static spark.Spark.*;
 import spark.Request;
 import spark.Response;
 import com.google.gson.Gson;
-import java.util.ArrayList;
 
 public class App {
     
@@ -20,6 +23,7 @@ public class App {
         serviceInitialization();
         port(getHerokuAssignedPort());
         
+        // Production routes:
         
         post("/getInfoAndPrices", (req, res) -> {
             return getInfoAndPricesFromGivenSchema("public", req, res);
@@ -58,6 +62,8 @@ public class App {
         });
         
         
+        // Test routes:
+        
         post("/test/getInfoAndPrices", (req, res) -> {
             return getInfoAndPricesFromGivenSchema("test", req, res);
         });
@@ -94,6 +100,8 @@ public class App {
             return getLeaderboardFromGivenSchema("test", req, res);
         });
         
+        
+        // Shared routes:
         
         get("/reset/:schemaName", (req, res) -> {
             String schemaName = req.params(":schemaName");
@@ -137,7 +145,7 @@ public class App {
         String ean = req.queryParams("ean");
 
         // Hintahaukka logic:
-        InfoAndPrices infoAndPrices = service.priceOfGivenProductInDifferentStores(ean, schemaName);
+        InfoAndPrices infoAndPrices = service.priceOfGivenProductInDifferentStoresAndProductInfo(ean, schemaName);
 
         // Build and send HTTP response:
         if(infoAndPrices == null) {  // Error response.
@@ -163,14 +171,10 @@ public class App {
         String tokenAndId = req.queryParams("id");
         
         // Hintahaukka logic:
-        Price priceBefore = service.latestPrice(ean, storeId, schemaName);
-        Product product = service.addThePriceOfGivenProductToDatabase(ean, cents, storeId, schemaName);
-        Price priceAfter = service.latestPrice(ean, storeId, schemaName);
-        User user = service.addPointsToUser(tokenAndId, HintahaukkaService.countPoints(priceBefore, priceAfter), schemaName);
-        service.addStorePointsToUser(user, storeId, HintahaukkaService.countPoints(priceBefore, priceAfter), schemaName);
-
+        User user = service.addThePriceOfGivenProductToDatabase(ean, cents, storeId, tokenAndId, schemaName);
+        
         // Build and send HTTP response:
-        if(product == null || user == null) {  // Error response.
+        if(user == null) {  // Error response.
             res.status(500);
             return "Server error!";
         }
@@ -251,7 +255,7 @@ public class App {
         }
         
         // Hintahaukka logic:
-        PricesOfStoresAndPoints result = service.pricesOfGivenProductsInDifferentStores(eans, tokenAndId, schemaName);
+        PointsAndPricesOfStores result = service.pricesOfGivenProductsInDifferentStoresAndUserPoints(eans, tokenAndId, schemaName);
 
         // Build and send HTTP response:
         if(result == null) {  // Error response.
@@ -275,7 +279,7 @@ public class App {
         String ean = req.queryParams("ean");
 
         // Hintahaukka logic:
-        PointsAndPrices result = service.priceOfGivenProductInDifferentStoresWithNoInfo(ean, tokenAndId, schemaName);
+        PointsAndPrices result = service.priceOfGivenProductInDifferentStoresAndUserPoints(ean, tokenAndId, schemaName);
 
         // Build and send HTTP response:
         if(result == null) {  // Error response.

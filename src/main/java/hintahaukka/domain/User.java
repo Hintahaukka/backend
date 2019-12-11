@@ -1,5 +1,8 @@
 package hintahaukka.domain;
 
+/**
+ * Represents a user.
+ */
 public class User {
     
     private int id;
