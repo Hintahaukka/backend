@@ -1,0 +1,33 @@
+CREATE TABLE public.Product (
+    id SERIAL PRIMARY KEY,
+    ean TEXT,
+    name TEXT);
+
+CREATE TABLE public.Store (
+    id SERIAL PRIMARY KEY,
+    googleStoreId TEXT,
+    name TEXT);
+
+CREATE TABLE public.Price (
+    id SERIAL PRIMARY KEY,
+    product_id INTEGER NOT NULL,
+    store_id INTEGER NOT NULL,
+    cents INTEGER,
+    created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(product_id) REFERENCES public.Product (id),
+    FOREIGN KEY(store_id) REFERENCES public.Store (id));
+
+CREATE TABLE public.User (
+    id SERIAL PRIMARY KEY,
+    token TEXT,
+    nickname TEXT,
+    pointsTotal INTEGER DEFAULT 0,
+    pointsUnused INTEGER DEFAULT 0);
+
+CREATE TABLE public.StorePoints (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    store_id INTEGER NOT NULL,
+    points INTEGER DEFAULT 0,
+    FOREIGN KEY(user_id) REFERENCES public.User (id),
+    FOREIGN KEY(store_id) REFERENCES public.Store (id));
