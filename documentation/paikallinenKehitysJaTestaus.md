@@ -28,18 +28,18 @@ Tässä välissä voit tehdä palvelimen kehitystyötä.
 
 Kehitystyön jälkeen on hyvä hetki suorittaa backend-palvelimen automaattiset testit.  
 Jos kyseessä Windows, syötä PowerShell:iin komento:  
-./gradlew.bat test
+./gradlew.bat test  
 Jos kyseessä Linux, syötä komentoriviin komento:  
-./gradlew test
-Testiraportti löytyy repositorion paikallisesta versiosta polusta (gitignored):
-build/reports/tests/test/index.html
-Testien koodikattavuusraportti löytyy repositorion paikallisesta versiosta polusta (gitignored):
-build/jacocoHtml/index.html
+./gradlew test  
+Testiraportti löytyy repositorion paikallisesta versiosta polusta (gitignored):  
+build/reports/tests/test/index.html  
+Testien koodikattavuusraportti löytyy repositorion paikallisesta versiosta polusta (gitignored):  
+build/jacocoHtml/index.html  
 
 6. Käynnistä backend-palvelin.  
 Jos kyseessä Windows, syötä PowerShell:iin komento:  
-./gradlew.bat run
+./gradlew.bat run  
 Jos kyseessä Linux, syötä komentoriviin komento:  
-./gradlew run
+./gradlew run  
 
 Kun backend-palvelin on käynnistetty, voit testata palvelimen rajapintaa tämän repositorion kansiosta "tools" löytyvällä HTML-lomakkeella "BackendRajapinnanTestaus.html".
